@@ -1,0 +1,135 @@
+// Schéma EGBM — voir doc/extracted/cahier-des-charges-egbm.md
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMINISTRATEUR
+  GESTIONNAIRE
+}
+
+enum ProductCategory {
+  BTP
+  AGRO_CHIMIQUE
+  MATERIAUX_INDUSTRIELS
+}
+
+enum PublicationType {
+  PUBLICATION
+  EVENEMENT
+}
+
+enum OrderStatus {
+  NOUVELLE
+  EN_COURS
+  LIVREE
+}
+
+enum DocumentType {
+  FACTURE
+  PROFORMA
+  DEVIS
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Product {
+  id          String          @id @default(cuid())
+  name        String
+  category    ProductCategory
+  price       Int
+  stock       Int             @default(0)
+  sold        Int             @default(0)
+  photoUrl    String?
+  description String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  orderItems    OrderItem[]
+  documentLines DocumentLine[]
+}
+
+model Publication {
+  id        String          @id @default(cuid())
+  type      PublicationType
+  title     String
+  text      String
+  date      DateTime        @default(now())
+  createdAt DateTime        @default(now())
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  clientName    String
+  clientPhone   String
+  clientAddress String?
+  total         Int
+  status        OrderStatus @default(NOUVELLE)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  items OrderItem[]
+}
+
+model OrderItem {
+  id          String  @id @default(cuid())
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId     String
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId   String?
+  productName String
+  quantity    Int
+  unitPrice   Int
+}
+
+// Compteur transactionnel pour la numérotation des documents (ex: id = "FACTURE-2026")
+model DocumentCounter {
+  id     String @id
+  lastNo Int    @default(0)
+}
+
+model Document {
+  id            String       @id @default(cuid())
+  number        String       @unique
+  type          DocumentType
+  clientName    String
+  clientContact String?
+  subtotal      Int
+  vat           Int
+  total         Int
+  createdAt     DateTime     @default(now())
+
+  lines DocumentLine[]
+}
+
+model DocumentLine {
+  id          String   @id @default(cuid())
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId  String
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId   String?
+  productName String
+  quantity    Int
+  unitPrice   Int
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  message   String
+  createdAt DateTime @default(now())
+}

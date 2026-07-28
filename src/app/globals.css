@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Palette EGBM (cahier des charges) */
+  --color-rust: #e8681e;
+  --color-rust-dark: #b8500f;
+  --color-green: #128a4c;
+  --color-green-light: #3fa96a;
+  --color-safety: #f0a81c;
+  --color-cement: #57544c;
+  --color-ink: #2a2822;
+  --color-ink-soft: #5a564c;
+  --color-bg: #eae4d6;
+  --color-bg-alt: #e0d8c7;
+  --color-cream: #f4efe3;
+  --color-paper: #fdfbf6;
+  --color-border-egbm: #cdc4ae;
+
+  /* Polices (variables injectées par next/font dans layout.tsx) */
+  --font-display: var(--font-barlow-condensed);
+  --font-body: var(--font-inter);
+  --font-mono: var(--font-ibm-plex-mono);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
