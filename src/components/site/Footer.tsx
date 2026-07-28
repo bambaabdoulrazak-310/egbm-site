@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 
 function FacebookIcon({ size = 17 }: { size?: number }) {
@@ -31,6 +32,9 @@ export function Footer() {
         ))}
       </div>
       <div>EGBM — Entreprise Générale Bamba Mamadou · Korhogo, Côte d&apos;Ivoire</div>
+      <Link href="/connexion" className="text-xs text-bg-alt/60 hover:text-bg-alt">
+        Espace entreprise
+      </Link>
     </footer>
   );
 }
