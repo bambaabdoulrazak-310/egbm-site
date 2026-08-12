@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   ClipboardList,
+  ExternalLink,
   FileText,
   LayoutDashboard,
   LogOut,
@@ -44,6 +45,13 @@ export function EntrepriseNav({ userName, role }: Props) {
           <Image src="/logo.jpg" alt="Logo EGBM" width={32} height={32} className="rounded-full object-cover" />
           EGBM
         </div>
+        <Link
+          href="/"
+          target="_blank"
+          className="mb-4 flex items-center gap-1.5 text-xs text-bg-alt hover:text-white"
+        >
+          <ExternalLink size={13} /> Voir le site client
+        </Link>
         <div className="mb-4 rounded-md bg-black/20 p-2 text-xs">
           <div className="font-semibold text-white">{userName}</div>
           <div className="mt-0.5 flex items-center gap-1">
@@ -73,6 +81,13 @@ export function EntrepriseNav({ userName, role }: Props) {
       </aside>
 
       <div className="flex items-center gap-1 overflow-x-auto bg-ink p-2 md:hidden print:hidden">
+        <Link
+          href="/"
+          target="_blank"
+          className="flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs text-bg-alt"
+        >
+          <ExternalLink size={14} /> Site
+        </Link>
         {items.map(([href, label, Icon]) => (
           <Link
             key={href}
