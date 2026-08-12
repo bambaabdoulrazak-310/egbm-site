@@ -21,6 +21,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://egbmci.com"),
   title: {
     default: "EGBM — Entreprise Générale Bamba Mamadou",
     template: "%s · EGBM",
