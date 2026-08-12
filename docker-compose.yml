@@ -23,9 +23,8 @@ services:
     environment:
       DATABASE_URL: postgres://egbm:${POSTGRES_PASSWORD}@db:5432/egbm
       AUTH_SECRET: ${AUTH_SECRET}
+      BLOB_READ_WRITE_TOKEN: ${BLOB_READ_WRITE_TOKEN}
       NODE_ENV: production
-    volumes:
-      - uploads:/app/public/uploads
     expose:
       - "3000"
 
@@ -44,6 +43,5 @@ services:
 
 volumes:
   db_data:
-  uploads:
   caddy_data:
   caddy_config:

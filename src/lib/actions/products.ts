@@ -1,8 +1,7 @@
 "use server";
 
 import { randomUUID } from "crypto";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
+import { put } from "@vercel/blob";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
@@ -24,12 +23,9 @@ async function savePhoto(file: File): Promise<string> {
   if (!ext) {
     throw new Error("Format de photo non supporté (jpg, png ou webp uniquement).");
   }
-  const uploadDir = path.join(process.cwd(), "public", "uploads", "products");
-  await mkdir(uploadDir, { recursive: true });
-  const filename = `${randomUUID()}.${ext}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(uploadDir, filename), buffer);
-  return `/uploads/products/${filename}`;
+  const filename = `products/${randomUUID()}.${ext}`;
+  const blob = await put(filename, file, { access: "public" });
+  return blob.url;
 }
 
 export async function saveProductAction(

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import { Plus } from "lucide-react";
 import { useCart } from "@/components/site/CartProvider";
 import {
@@ -17,6 +18,7 @@ export interface ProduitListItem {
   category: ProductCategory;
   price: number;
   stock: number;
+  photoUrl: string | null;
 }
 
 const CATEGORIES = Object.keys(CATEGORY_LABELS) as ProductCategory[];
@@ -65,8 +67,12 @@ export function ProduitsClient({ products }: { products: ProduitListItem[] }) {
                 key={p.id}
                 className="flex flex-col rounded-lg border border-border-egbm bg-cream p-4"
               >
-                <div className="mb-3 flex h-24 items-center justify-center rounded-md bg-bg-alt">
-                  <Icon size={36} className={CATEGORY_TEXT_COLOR[p.category]} />
+                <div className="relative mb-3 flex h-24 items-center justify-center overflow-hidden rounded-md bg-bg-alt">
+                  {p.photoUrl ? (
+                    <Image src={p.photoUrl} alt={p.name} fill className="object-cover" />
+                  ) : (
+                    <Icon size={36} className={CATEGORY_TEXT_COLOR[p.category]} />
+                  )}
                 </div>
                 <div
                   className={`text-xs font-semibold uppercase tracking-wide ${CATEGORY_TEXT_COLOR[p.category]}`}

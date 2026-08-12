@@ -34,9 +34,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# uploads (user-generated content, not source)
-/public/uploads/
-
 # IDE
 .vscode/*
 !.vscode/extensions.json

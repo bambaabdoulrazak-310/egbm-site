@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
   // serveur de dev — sans ça, Next.js bloque silencieusement les Server
   // Actions envoyées depuis une origine différente de localhost.
   allowedDevOrigins: ["*.trycloudflare.com"],
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
+    ],
+  },
 };
 
 export default nextConfig;

@@ -39,6 +39,8 @@ cp .env.example .env.local
 
 - `DATABASE_URL` — votre chaîne de connexion Postgres.
 - `AUTH_SECRET` — valeur aléatoire longue (`openssl rand -base64 32`).
+- `BLOB_READ_WRITE_TOKEN` — pour l'upload des photos produits (Vercel Storage → Blob).
+  En local, sans ce token, la création de produit fonctionne mais l'envoi de photo échoue.
 - `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` / `SEED_ADMIN_NAME` — compte Administrateur
   créé par le seed (uniquement utilisé par le script, jamais stocké en clair ailleurs).
 
@@ -100,8 +102,12 @@ docker compose exec -e SEED_ADMIN_EMAIL=admin@egbm.ci -e SEED_ADMIN_PASSWORD=...
   -e SEED_ADMIN_NAME="Administrateur EGBM" app npx prisma db seed
 ```
 
-Les photos de produits téléversées sont stockées dans le volume Docker `uploads`
-(persistant entre les déploiements).
+Les photos de produits sont stockées sur [Vercel Blob](https://vercel.com/docs/storage/vercel-blob)
+(pas sur le disque local — celui-ci n'est pas persistant en environnement serverless).
+Créez un store dans Vercel (Storage → Create Database → Blob), connectez-le au
+projet, et le token `BLOB_READ_WRITE_TOKEN` sera injecté automatiquement. Pour
+un déploiement VPS/Docker, ajoutez ce même token dans `.env` (voir
+`.env.production.example`) — Vercel Blob fonctionne indépendamment de l'hébergement.
 
 ### Environnements séparés
 

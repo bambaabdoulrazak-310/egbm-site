@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { CATEGORY_LABELS, formatFCFA } from "@/lib/catalog";
 import { saveProductAction, deleteProductAction, type ProductFormState } from "@/lib/actions/products";
@@ -14,6 +15,7 @@ export interface AdminProduit {
   stock: number;
   sold: number;
   description: string | null;
+  photoUrl: string | null;
 }
 
 const CATEGORIES = Object.keys(CATEGORY_LABELS) as ProductCategory[];
@@ -107,6 +109,15 @@ export function AdminProduitsClient({ products }: { products: AdminProduit[] }) 
             rows={2}
           />
           <div className="flex flex-wrap items-center gap-2 md:col-span-5">
+            {editing?.photoUrl && (
+              <Image
+                src={editing.photoUrl}
+                alt=""
+                width={40}
+                height={40}
+                className="rounded-md object-cover"
+              />
+            )}
             <label className="flex items-center gap-1.5 text-sm text-ink-soft">
               Photo (jpg/png/webp) :
               <input
@@ -132,6 +143,7 @@ export function AdminProduitsClient({ products }: { products: AdminProduit[] }) 
         <table className="w-full min-w-[620px] text-sm">
           <thead className="bg-ink text-white">
             <tr>
+              <th className="p-3"></th>
               <th className="p-3 text-left">Produit</th>
               <th className="p-3 text-left">Catégorie</th>
               <th className="p-3 text-left">Prix</th>
@@ -143,6 +155,19 @@ export function AdminProduitsClient({ products }: { products: AdminProduit[] }) 
           <tbody>
             {products.map((p) => (
               <tr key={p.id} className="border-t border-border-egbm bg-cream">
+                <td className="p-3">
+                  {p.photoUrl ? (
+                    <Image
+                      src={p.photoUrl}
+                      alt=""
+                      width={36}
+                      height={36}
+                      className="rounded-md object-cover"
+                    />
+                  ) : (
+                    <div className="h-9 w-9 rounded-md bg-bg-alt" />
+                  )}
+                </td>
                 <td className="p-3 font-medium">{p.name}</td>
                 <td className="p-3">{CATEGORY_LABELS[p.category]}</td>
                 <td className="p-3 font-mono">{formatFCFA(p.price)}</td>

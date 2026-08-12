@@ -25,7 +25,7 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/src/generated ./src/generated
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
-RUN mkdir -p /app/public/uploads/products && chown -R egbm:egbm /app
+RUN chown -R egbm:egbm /app
 RUN chmod +x /app/docker-entrypoint.sh
 
 USER egbm
