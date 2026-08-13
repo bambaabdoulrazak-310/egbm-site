@@ -1,6 +1,11 @@
 import { HardHat, Leaf, Package } from "lucide-react";
 import type { ProductCategory } from "@/generated/prisma/enums";
 
+export interface MediaItem {
+  url: string;
+  type: "IMAGE" | "VIDEO";
+}
+
 export const CATEGORY_LABELS: Record<ProductCategory, string> = {
   BTP: "BTP",
   AGRO_CHIMIQUE: "Agro-chimique",

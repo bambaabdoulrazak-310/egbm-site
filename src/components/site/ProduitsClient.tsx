@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Film, Plus } from "lucide-react";
 import { useCart } from "@/components/site/CartProvider";
 import {
@@ -9,6 +10,7 @@ import {
   CATEGORY_LABELS,
   CATEGORY_TEXT_COLOR,
   formatFCFA,
+  type MediaItem,
 } from "@/lib/catalog";
 import type { ProductCategory } from "@/generated/prisma/enums";
 
@@ -18,7 +20,7 @@ export interface ProduitListItem {
   category: ProductCategory;
   price: number;
   stock: number;
-  media: Array<{ url: string; type: "IMAGE" | "VIDEO" }>;
+  media: MediaItem[];
 }
 
 const CATEGORIES = Object.keys(CATEGORY_LABELS) as ProductCategory[];
@@ -68,21 +70,23 @@ export function ProduitsClient({ products }: { products: ProduitListItem[] }) {
                 key={p.id}
                 className="flex flex-col rounded-lg border border-border-egbm bg-cream p-4"
               >
-                <div className="relative mb-3 flex h-24 items-center justify-center overflow-hidden rounded-md bg-bg-alt">
-                  {cover?.type === "IMAGE" ? (
-                    <Image src={cover.url} alt={p.name} fill className="object-cover" />
-                  ) : cover?.type === "VIDEO" ? (
-                    <Film size={36} className={CATEGORY_TEXT_COLOR[p.category]} />
-                  ) : (
-                    <Icon size={36} className={CATEGORY_TEXT_COLOR[p.category]} />
-                  )}
-                </div>
-                <div
-                  className={`text-xs font-semibold uppercase tracking-wide ${CATEGORY_TEXT_COLOR[p.category]}`}
-                >
-                  {CATEGORY_LABELS[p.category]}
-                </div>
-                <div className="mt-1 flex-1 font-semibold">{p.name}</div>
+                <Link href={`/produits/${p.id}`}>
+                  <div className="relative mb-3 flex h-24 items-center justify-center overflow-hidden rounded-md bg-bg-alt">
+                    {cover?.type === "IMAGE" ? (
+                      <Image src={cover.url} alt={p.name} fill className="object-cover" />
+                    ) : cover?.type === "VIDEO" ? (
+                      <Film size={36} className={CATEGORY_TEXT_COLOR[p.category]} />
+                    ) : (
+                      <Icon size={36} className={CATEGORY_TEXT_COLOR[p.category]} />
+                    )}
+                  </div>
+                  <div
+                    className={`text-xs font-semibold uppercase tracking-wide ${CATEGORY_TEXT_COLOR[p.category]}`}
+                  >
+                    {CATEGORY_LABELS[p.category]}
+                  </div>
+                  <div className="mt-1 flex-1 font-semibold hover:underline">{p.name}</div>
+                </Link>
                 <div className="mt-2 font-mono font-semibold">{formatFCFA(p.price)}</div>
                 <div className="text-xs text-ink-soft">
                   {p.stock > 0 ? `${p.stock} en stock` : "Rupture de stock"}

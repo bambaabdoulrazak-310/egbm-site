@@ -4,11 +4,7 @@ import { useId, useRef, useState } from "react";
 import Image from "next/image";
 import { upload } from "@vercel/blob/client";
 import { Film, Loader2, Plus, X } from "lucide-react";
-
-export interface MediaItem {
-  url: string;
-  type: "IMAGE" | "VIDEO";
-}
+import type { MediaItem } from "@/lib/catalog";
 
 interface PendingItem {
   key: string;

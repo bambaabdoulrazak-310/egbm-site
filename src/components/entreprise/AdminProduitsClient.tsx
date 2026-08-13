@@ -3,9 +3,9 @@
 import { useActionState, useEffect, useState } from "react";
 import Image from "next/image";
 import { Film, Pencil, Plus, Trash2 } from "lucide-react";
-import { CATEGORY_LABELS, formatFCFA } from "@/lib/catalog";
+import { CATEGORY_LABELS, formatFCFA, type MediaItem } from "@/lib/catalog";
 import { saveProductAction, deleteProductAction, type ProductFormState } from "@/lib/actions/products";
-import { MediaUploader, type MediaItem } from "@/components/entreprise/MediaUploader";
+import { MediaUploader } from "@/components/entreprise/MediaUploader";
 import type { ProductCategory } from "@/generated/prisma/enums";
 
 export interface AdminProduit {
