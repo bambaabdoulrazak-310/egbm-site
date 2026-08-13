@@ -1,7 +1,6 @@
 "use server";
 
-import { randomUUID } from "crypto";
-import { put } from "@vercel/blob";
+import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
@@ -12,21 +11,13 @@ export interface ProductFormState {
 }
 
 const CATEGORIES = ["BTP", "AGRO_CHIMIQUE", "MATERIAUX_INDUSTRIELS"] as const;
-const ALLOWED_PHOTO_TYPES: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-};
 
-async function savePhoto(file: File): Promise<string> {
-  const ext = ALLOWED_PHOTO_TYPES[file.type];
-  if (!ext) {
-    throw new Error("Format de photo non supporté (jpg, png ou webp uniquement).");
-  }
-  const filename = `products/${randomUUID()}.${ext}`;
-  const blob = await put(filename, file, { access: "public" });
-  return blob.url;
-}
+const mediaSchema = z.array(
+  z.object({
+    url: z.string().url(),
+    type: z.enum(["IMAGE", "VIDEO"]),
+  })
+);
 
 export async function saveProductAction(
   _prevState: ProductFormState,
@@ -40,7 +31,7 @@ export async function saveProductAction(
   const price = Number(formData.get("price"));
   const stock = Number(formData.get("stock") ?? 0);
   const description = String(formData.get("description") ?? "").trim();
-  const photo = formData.get("photo");
+  const mediaRaw = String(formData.get("media") ?? "[]");
 
   if (!name || !Number.isFinite(price) || price <= 0) {
     return { error: "Veuillez renseigner un nom et un prix valides." };
@@ -49,13 +40,11 @@ export async function saveProductAction(
     return { error: "Catégorie invalide." };
   }
 
-  let photoUrl: string | undefined;
-  if (photo instanceof File && photo.size > 0) {
-    try {
-      photoUrl = await savePhoto(photo);
-    } catch (e) {
-      return { error: e instanceof Error ? e.message : "Erreur lors de l'envoi de la photo." };
-    }
+  let media: z.infer<typeof mediaSchema>;
+  try {
+    media = mediaSchema.parse(JSON.parse(mediaRaw));
+  } catch {
+    return { error: "Photos/vidéos invalides." };
   }
 
   const data = {
@@ -64,13 +53,19 @@ export async function saveProductAction(
     price: Math.round(price),
     stock: Math.max(0, Math.round(Number.isFinite(stock) ? stock : 0)),
     description: description || null,
-    ...(photoUrl ? { photoUrl } : {}),
   };
+  const mediaCreate = media.map((m, index) => ({ url: m.url, type: m.type, order: index }));
 
   if (id) {
-    await prisma.product.update({ where: { id }, data });
+    await prisma.$transaction([
+      prisma.productMedia.deleteMany({ where: { productId: id } }),
+      prisma.product.update({
+        where: { id },
+        data: { ...data, media: { create: mediaCreate } },
+      }),
+    ]);
   } else {
-    await prisma.product.create({ data });
+    await prisma.product.create({ data: { ...data, media: { create: mediaCreate } } });
   }
 
   revalidatePath("/espace-entreprise/produits");

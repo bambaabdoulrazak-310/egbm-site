@@ -8,7 +8,14 @@ export const revalidate = 0;
 export default async function ProduitsPage() {
   const products = await prisma.product.findMany({
     orderBy: { name: "asc" },
-    select: { id: true, name: true, category: true, price: true, stock: true, photoUrl: true },
+    select: {
+      id: true,
+      name: true,
+      category: true,
+      price: true,
+      stock: true,
+      media: { orderBy: { order: "asc" }, take: 1 },
+    },
   });
 
   return (

@@ -37,6 +37,11 @@ enum DocumentType {
   DEVIS
 }
 
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String
@@ -54,13 +59,23 @@ model Product {
   price       Int
   stock       Int             @default(0)
   sold        Int             @default(0)
-  photoUrl    String?
   description String?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
+  media         ProductMedia[]
   orderItems    OrderItem[]
   documentLines DocumentLine[]
+}
+
+model ProductMedia {
+  id        String    @id @default(cuid())
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+  url       String
+  type      MediaType
+  order     Int       @default(0)
+  createdAt DateTime  @default(now())
 }
 
 model Publication {

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import { Plus } from "lucide-react";
+import { Film, Plus } from "lucide-react";
 import { useCart } from "@/components/site/CartProvider";
 import {
   CATEGORY_ICON,
@@ -18,7 +18,7 @@ export interface ProduitListItem {
   category: ProductCategory;
   price: number;
   stock: number;
-  photoUrl: string | null;
+  media: Array<{ url: string; type: "IMAGE" | "VIDEO" }>;
 }
 
 const CATEGORIES = Object.keys(CATEGORY_LABELS) as ProductCategory[];
@@ -62,14 +62,17 @@ export function ProduitsClient({ products }: { products: ProduitListItem[] }) {
         <div className="mt-6 grid gap-4 md:grid-cols-3">
           {filtered.map((p) => {
             const Icon = CATEGORY_ICON[p.category];
+            const cover = p.media[0];
             return (
               <div
                 key={p.id}
                 className="flex flex-col rounded-lg border border-border-egbm bg-cream p-4"
               >
                 <div className="relative mb-3 flex h-24 items-center justify-center overflow-hidden rounded-md bg-bg-alt">
-                  {p.photoUrl ? (
-                    <Image src={p.photoUrl} alt={p.name} fill className="object-cover" />
+                  {cover?.type === "IMAGE" ? (
+                    <Image src={cover.url} alt={p.name} fill className="object-cover" />
+                  ) : cover?.type === "VIDEO" ? (
+                    <Film size={36} className={CATEGORY_TEXT_COLOR[p.category]} />
                   ) : (
                     <Icon size={36} className={CATEGORY_TEXT_COLOR[p.category]} />
                   )}

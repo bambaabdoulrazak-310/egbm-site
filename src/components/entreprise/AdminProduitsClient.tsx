@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import Image from "next/image";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Film, Pencil, Plus, Trash2 } from "lucide-react";
 import { CATEGORY_LABELS, formatFCFA } from "@/lib/catalog";
 import { saveProductAction, deleteProductAction, type ProductFormState } from "@/lib/actions/products";
+import { MediaUploader, type MediaItem } from "@/components/entreprise/MediaUploader";
 import type { ProductCategory } from "@/generated/prisma/enums";
 
 export interface AdminProduit {
@@ -15,7 +16,7 @@ export interface AdminProduit {
   stock: number;
   sold: number;
   description: string | null;
-  photoUrl: string | null;
+  media: MediaItem[];
 }
 
 const CATEGORIES = Object.keys(CATEGORY_LABELS) as ProductCategory[];
@@ -25,7 +26,6 @@ export function AdminProduitsClient({ products }: { products: AdminProduit[] }) 
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<AdminProduit | null>(null);
   const [state, formAction, pending] = useActionState(saveProductAction, initialState);
-  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     // Referme le formulaire une fois le produit enregistré côté serveur.
@@ -33,7 +33,6 @@ export function AdminProduitsClient({ products }: { products: AdminProduit[] }) 
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowForm(false);
       setEditing(null);
-      formRef.current?.reset();
     }
   }, [state.success]);
 
@@ -61,7 +60,7 @@ export function AdminProduitsClient({ products }: { products: AdminProduit[] }) 
 
       {showForm && (
         <form
-          ref={formRef}
+          key={editing?.id ?? "new"}
           action={formAction}
           className="mt-4 grid gap-3 rounded-lg border border-border-egbm bg-cream p-4 md:grid-cols-5"
         >
@@ -108,25 +107,10 @@ export function AdminProduitsClient({ products }: { products: AdminProduit[] }) 
             className="rounded-md border border-border-egbm p-2 md:col-span-5"
             rows={2}
           />
+
+          <MediaUploader initialMedia={editing?.media} />
+
           <div className="flex flex-wrap items-center gap-2 md:col-span-5">
-            {editing?.photoUrl && (
-              <Image
-                src={editing.photoUrl}
-                alt=""
-                width={40}
-                height={40}
-                className="rounded-md object-cover"
-              />
-            )}
-            <label className="flex items-center gap-1.5 text-sm text-ink-soft">
-              Photo (jpg/png/webp) :
-              <input
-                type="file"
-                name="photo"
-                accept="image/jpeg,image/png,image/webp"
-                className="text-sm"
-              />
-            </label>
             {state.error && <span className="text-sm font-medium text-rust-dark">{state.error}</span>}
             <button
               type="submit"
@@ -153,41 +137,50 @@ export function AdminProduitsClient({ products }: { products: AdminProduit[] }) 
             </tr>
           </thead>
           <tbody>
-            {products.map((p) => (
-              <tr key={p.id} className="border-t border-border-egbm bg-cream">
-                <td className="p-3">
-                  {p.photoUrl ? (
-                    <Image
-                      src={p.photoUrl}
-                      alt=""
-                      width={36}
-                      height={36}
-                      className="rounded-md object-cover"
-                    />
-                  ) : (
-                    <div className="h-9 w-9 rounded-md bg-bg-alt" />
-                  )}
-                </td>
-                <td className="p-3 font-medium">{p.name}</td>
-                <td className="p-3">{CATEGORY_LABELS[p.category]}</td>
-                <td className="p-3 font-mono">{formatFCFA(p.price)}</td>
-                <td className="p-3">{p.stock}</td>
-                <td className="p-3">{p.sold}</td>
-                <td className="p-3">
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => startEdit(p)} aria-label="Modifier">
-                      <Pencil size={16} className="text-cement" />
-                    </button>
-                    <form action={deleteProductAction}>
-                      <input type="hidden" name="id" value={p.id} />
-                      <button type="submit" aria-label="Supprimer">
-                        <Trash2 size={16} className="text-rust" />
+            {products.map((p) => {
+              const cover = p.media[0];
+              return (
+                <tr key={p.id} className="border-t border-border-egbm bg-cream">
+                  <td className="p-3">
+                    {cover ? (
+                      cover.type === "IMAGE" ? (
+                        <Image
+                          src={cover.url}
+                          alt=""
+                          width={36}
+                          height={36}
+                          className="rounded-md object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-bg-alt">
+                          <Film size={16} className="text-ink-soft" />
+                        </div>
+                      )
+                    ) : (
+                      <div className="h-9 w-9 rounded-md bg-bg-alt" />
+                    )}
+                  </td>
+                  <td className="p-3 font-medium">{p.name}</td>
+                  <td className="p-3">{CATEGORY_LABELS[p.category]}</td>
+                  <td className="p-3 font-mono">{formatFCFA(p.price)}</td>
+                  <td className="p-3">{p.stock}</td>
+                  <td className="p-3">{p.sold}</td>
+                  <td className="p-3">
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => startEdit(p)} aria-label="Modifier">
+                        <Pencil size={16} className="text-cement" />
                       </button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                      <form action={deleteProductAction}>
+                        <input type="hidden" name="id" value={p.id} />
+                        <button type="submit" aria-label="Supprimer">
+                          <Trash2 size={16} className="text-rust" />
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
