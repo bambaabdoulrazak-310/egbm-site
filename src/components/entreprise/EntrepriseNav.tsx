@@ -7,11 +7,13 @@ import {
   ClipboardList,
   ExternalLink,
   FileText,
+  Inbox,
   LayoutDashboard,
   LogOut,
   Newspaper,
   Package,
   ShieldCheck,
+  Trophy,
   Users,
 } from "lucide-react";
 import { logoutAction } from "@/lib/actions/auth";
@@ -20,7 +22,9 @@ const BASE_ITEMS: Array<[href: string, label: string, Icon: typeof LayoutDashboa
   ["/espace-entreprise", "Tableau de bord", LayoutDashboard],
   ["/espace-entreprise/produits", "Produits", Package],
   ["/espace-entreprise/publications", "Publications", Newspaper],
+  ["/espace-entreprise/realisations", "Réalisations", Trophy],
   ["/espace-entreprise/commandes", "Commandes", ClipboardList],
+  ["/espace-entreprise/demandes", "Demandes", Inbox],
   ["/espace-entreprise/facturation", "Facturation", FileText],
 ];
 

@@ -5,7 +5,12 @@ import { ProduitsClient } from "@/components/site/ProduitsClient";
 export const metadata: Metadata = { title: "Produits" };
 export const revalidate = 0;
 
-export default async function ProduitsPage() {
+export default async function ProduitsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ categorie?: string }>;
+}) {
+  const { categorie } = await searchParams;
   const products = await prisma.product.findMany({
     orderBy: { name: "asc" },
     select: {
@@ -21,7 +26,7 @@ export default async function ProduitsPage() {
   return (
     <div>
       <h1 className="font-display text-3xl font-extrabold md:text-5xl">Produits</h1>
-      <ProduitsClient products={products} />
+      <ProduitsClient products={products} initialCategory={categorie} />
     </div>
   );
 }

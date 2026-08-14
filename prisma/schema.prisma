@@ -148,3 +148,22 @@ model ContactMessage {
   message   String
   createdAt DateTime @default(now())
 }
+
+model Realisation {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  location    String?
+  category    ProductCategory?
+  photoUrl    String?
+  createdAt   DateTime @default(now())
+}
+
+model QuoteRequest {
+  id          String   @id @default(cuid())
+  clientName  String
+  clientPhone String
+  clientEmail String?
+  message     String
+  createdAt   DateTime @default(now())
+}

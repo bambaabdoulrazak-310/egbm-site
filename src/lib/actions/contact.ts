@@ -1,6 +1,8 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { requireSession } from "@/lib/auth-guard";
 
 export interface ContactState {
   error?: string;
@@ -21,4 +23,12 @@ export async function sendContactMessageAction(
   await prisma.contactMessage.create({ data: { name, message } });
 
   return { success: true };
+}
+
+export async function deleteContactMessageAction(formData: FormData) {
+  await requireSession();
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+  await prisma.contactMessage.delete({ where: { id } });
+  revalidatePath("/espace-entreprise/demandes");
 }

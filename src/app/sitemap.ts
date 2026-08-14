@@ -3,7 +3,16 @@ import type { MetadataRoute } from "next";
 const BASE_URL = "https://egbmci.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const routes = ["", "/produits", "/services", "/publications", "/commande", "/contact"];
+  const routes = [
+    "",
+    "/produits",
+    "/services",
+    "/realisations",
+    "/publications",
+    "/commande",
+    "/devis",
+    "/contact",
+  ];
 
   return routes.map((route) => ({
     url: `${BASE_URL}${route}`,

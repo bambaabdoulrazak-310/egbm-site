@@ -25,8 +25,18 @@ export interface ProduitListItem {
 
 const CATEGORIES = Object.keys(CATEGORY_LABELS) as ProductCategory[];
 
-export function ProduitsClient({ products }: { products: ProduitListItem[] }) {
-  const [filter, setFilter] = useState<ProductCategory | "TOUS">("TOUS");
+export function ProduitsClient({
+  products,
+  initialCategory,
+}: {
+  products: ProduitListItem[];
+  initialCategory?: string;
+}) {
+  const [filter, setFilter] = useState<ProductCategory | "TOUS">(
+    CATEGORIES.includes(initialCategory as ProductCategory)
+      ? (initialCategory as ProductCategory)
+      : "TOUS"
+  );
   const { addToCart } = useCart();
 
   const filtered = useMemo(
