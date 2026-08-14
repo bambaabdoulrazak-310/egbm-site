@@ -97,6 +97,9 @@ export function Footer() {
               <MapPin size={14} /> Korhogo, Côte d&apos;Ivoire
             </li>
             <li className="flex items-center gap-2">
+              <Phone size={14} /> +225 07 08 47 85 37
+            </li>
+            <li className="flex items-center gap-2">
               <Phone size={14} /> +225 05 56 80 42 86
             </li>
             <li className="flex items-center gap-2">

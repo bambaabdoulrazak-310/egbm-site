@@ -14,6 +14,9 @@ export default function ContactPage() {
             <MapPin className="text-rust" /> Korhogo, Côte d&apos;Ivoire
           </div>
           <div className="flex items-center gap-3">
+            <Phone className="text-rust" /> +225 07 08 47 85 37
+          </div>
+          <div className="flex items-center gap-3">
             <Phone className="text-rust" /> +225 05 56 80 42 86
           </div>
           <div className="flex items-center gap-3">
