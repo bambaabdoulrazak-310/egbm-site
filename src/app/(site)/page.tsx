@@ -44,23 +44,23 @@ export default async function AccueilPage() {
 
   return (
     <div>
-      <div className="mb-8 h-56 overflow-hidden rounded-lg border border-border-egbm bg-gradient-to-br from-rust to-rust-dark md:h-72">
-        <div className="flex h-full items-center px-8">
-          <span className="font-display text-6xl font-extrabold text-white/90 md:text-8xl">
-            EGBM
-          </span>
-        </div>
-      </div>
-
-      <section className="grid items-center gap-10 md:grid-cols-2">
-        <div>
+      <div className="relative -mx-5 mb-6 h-[420px] overflow-hidden sm:mx-0 sm:rounded-lg md:h-[480px]">
+        <Image
+          src="/hero-chantier.avif"
+          alt="Chantier EGBM"
+          fill
+          priority
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 to-ink/10" />
+        <div className="relative flex h-full flex-col justify-end px-6 pb-8 sm:px-10 sm:pb-10">
           <Stamp />
-          <h1 className="mt-4 font-display text-4xl font-extrabold leading-[0.95] sm:text-5xl md:text-6xl">
+          <h1 className="mt-4 font-display text-4xl font-extrabold leading-[0.95] text-white sm:text-5xl md:text-6xl">
             BÂTIR, CULTIVER,
             <br />
             ÉQUIPER LE NORD.
           </h1>
-          <p className="mt-5 max-w-md text-lg text-ink-soft">
+          <p className="mt-5 max-w-md text-lg text-white/90">
             Depuis Korhogo, EGBM fournit matériaux de construction, intrants agro-chimiques et
             matériaux industriels aux chantiers et exploitations de toute la région.
           </p>
@@ -73,25 +73,26 @@ export default async function AccueilPage() {
             </Link>
             <Link
               href="/devis"
-              className="rounded-md border-2 border-ink px-5 py-3 font-semibold"
+              className="rounded-md border-2 border-white px-5 py-3 font-semibold text-white"
             >
               Demander un devis
             </Link>
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
-          {STATS.map(([n, l]) => (
-            <div
-              key={l}
-              className="rounded-lg border border-border-egbm bg-cream p-2.5 text-center sm:p-4"
-            >
-              <div className="font-display text-xl font-extrabold text-rust sm:text-3xl md:text-4xl">
-                {n}
-              </div>
-              <div className="mt-1 text-[10px] text-ink-soft sm:text-xs">{l}</div>
+      </div>
+
+      <section className="grid grid-cols-3 gap-2 sm:gap-3">
+        {STATS.map(([n, l]) => (
+          <div
+            key={l}
+            className="rounded-lg border border-border-egbm bg-cream p-2.5 text-center sm:p-4"
+          >
+            <div className="font-display text-xl font-extrabold text-rust sm:text-3xl md:text-4xl">
+              {n}
             </div>
-          ))}
-        </div>
+            <div className="mt-1 text-[10px] text-ink-soft sm:text-xs">{l}</div>
+          </div>
+        ))}
       </section>
 
       <section className="mt-16">
