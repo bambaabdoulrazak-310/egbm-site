@@ -11,7 +11,6 @@ import {
   Package,
   Users,
 } from "lucide-react";
-import { Stamp } from "@/components/site/Stamp";
 import { prisma } from "@/lib/prisma";
 import { CATEGORY_ICON, CATEGORY_LABELS, CATEGORY_TEXT_COLOR } from "@/lib/catalog";
 
@@ -54,8 +53,7 @@ export default async function AccueilPage() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 to-ink/10" />
         <div className="relative flex h-full flex-col justify-end px-6 pb-8 sm:px-10 sm:pb-10">
-          <Stamp />
-          <h1 className="mt-4 font-display text-4xl font-extrabold leading-[0.95] text-white sm:text-5xl md:text-6xl">
+          <h1 className="font-display text-4xl font-extrabold leading-[0.95] text-white sm:text-5xl md:text-6xl">
             BÂTIR, CULTIVER,
             <br />
             ÉQUIPER LE NORD.
