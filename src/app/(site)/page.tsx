@@ -17,9 +17,9 @@ import { CATEGORY_ICON, CATEGORY_LABELS, CATEGORY_TEXT_COLOR } from "@/lib/catal
 export const revalidate = 0;
 
 const SECTORS = [
-  { cat: "BTP", Icon: HardHat, color: "bg-rust" },
-  { cat: "Agro-chimique", Icon: Leaf, color: "bg-green" },
-  { cat: "Matériaux industriels", Icon: Package, color: "bg-cement" },
+  { cat: "BTP", Icon: HardHat, color: "bg-rust", photo: "/btp-chantier.jpg" },
+  { cat: "Agro-chimique", Icon: Leaf, color: "bg-green", photo: null },
+  { cat: "Matériaux industriels", Icon: Package, color: "bg-cement", photo: null },
 ] as const;
 
 const STATS: Array<[string, string]> = [
@@ -96,13 +96,20 @@ export default async function AccueilPage() {
       <section className="mt-16">
         <h2 className="font-display text-2xl font-bold md:text-3xl">Nos secteurs</h2>
         <div className="mt-5 grid gap-4 md:grid-cols-3">
-          {SECTORS.map(({ cat, Icon, color }) => (
+          {SECTORS.map(({ cat, Icon, color, photo }) => (
             <div
               key={cat}
               className="overflow-hidden rounded-lg border border-border-egbm bg-cream"
             >
-              <div className={`flex h-36 items-center justify-center ${color}`}>
-                <Icon size={56} className="text-white/90" />
+              <div className={`relative flex h-36 items-center justify-center overflow-hidden ${color}`}>
+                {photo ? (
+                  <>
+                    <Image src={photo} alt={cat} fill className="object-cover" />
+                    <div className="absolute inset-0 bg-ink/30" />
+                  </>
+                ) : (
+                  <Icon size={56} className="text-white/90" />
+                )}
               </div>
               <div className="p-4">
                 <Icon className="text-ink-soft" size={24} />
