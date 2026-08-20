@@ -107,14 +107,8 @@ export default async function AccueilPage() {
               className="overflow-hidden rounded-lg border border-border-egbm bg-cream"
             >
               <div className={`relative flex h-36 items-center justify-center overflow-hidden ${color}`}>
-                {photo ? (
-                  <>
-                    <Image src={photo} alt={cat} fill className="object-cover" />
-                    <div className="absolute inset-0 bg-ink/30" />
-                  </>
-                ) : (
-                  <Icon size={56} className="text-white/90" />
-                )}
+                <Image src={photo} alt={cat} fill className="object-cover" />
+                <div className="absolute inset-0 bg-ink/30" />
               </div>
               <div className="p-4">
                 <Icon className="text-ink-soft" size={24} />
