@@ -18,8 +18,13 @@ export const revalidate = 0;
 
 const SECTORS = [
   { cat: "BTP", Icon: HardHat, color: "bg-rust", photo: "/btp-chantier.jpg" },
-  { cat: "Agro-chimique", Icon: Leaf, color: "bg-green", photo: null },
-  { cat: "Matériaux industriels", Icon: Package, color: "bg-cement", photo: null },
+  { cat: "Agro-chimique", Icon: Leaf, color: "bg-green", photo: "/agrochimie-secteur.webp" },
+  {
+    cat: "Matériaux industriels",
+    Icon: Package,
+    color: "bg-cement",
+    photo: "/materiaux-industriels-secteur.jpg",
+  },
 ] as const;
 
 const STATS: Array<[string, string]> = [
