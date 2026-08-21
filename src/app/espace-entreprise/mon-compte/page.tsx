@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
+import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
 import { ChangePasswordForm } from "@/components/entreprise/ChangePasswordForm";
+import { ChangeEmailForm } from "@/components/entreprise/ChangeEmailForm";
 
 export const metadata: Metadata = { title: "Mon compte — Espace Entreprise" };
 
 export default async function MonComptePage() {
   const session = await requireSession();
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: session.sub },
+    select: { email: true },
+  });
 
   return (
     <div>
@@ -13,6 +19,7 @@ export default async function MonComptePage() {
       <p className="mt-2 text-sm text-ink-soft">
         Connecté en tant que <span className="font-semibold">{session.name}</span>.
       </p>
+      <ChangeEmailForm currentEmail={user.email} />
       <ChangePasswordForm />
     </div>
   );

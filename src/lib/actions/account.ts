@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
 import { hashPassword, verifyPassword } from "@/lib/password";
@@ -7,6 +8,51 @@ import { hashPassword, verifyPassword } from "@/lib/password";
 export interface PasswordFormState {
   error?: string;
   success?: boolean;
+}
+
+export interface EmailFormState {
+  error?: string;
+  success?: boolean;
+}
+
+export async function changeEmailAction(
+  _prevState: EmailFormState,
+  formData: FormData
+): Promise<EmailFormState> {
+  const session = await requireSession();
+
+  const newEmail = String(formData.get("nouvelEmail") ?? "")
+    .trim()
+    .toLowerCase();
+  const currentPassword = String(formData.get("motdepasseActuel") ?? "");
+
+  if (!newEmail || !newEmail.includes("@")) {
+    return { error: "Veuillez renseigner un email valide." };
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: session.sub } });
+  if (!user) {
+    return { error: "Utilisateur introuvable." };
+  }
+
+  const valid = await verifyPassword(currentPassword, user.passwordHash);
+  if (!valid) {
+    return { error: "Mot de passe incorrect." };
+  }
+
+  if (newEmail === user.email) {
+    return { error: "Cet email est déjà le vôtre." };
+  }
+
+  const existing = await prisma.user.findUnique({ where: { email: newEmail } });
+  if (existing) {
+    return { error: "Un compte existe déjà avec cet email." };
+  }
+
+  await prisma.user.update({ where: { id: user.id }, data: { email: newEmail } });
+
+  revalidatePath("/espace-entreprise/mon-compte");
+  return { success: true };
 }
 
 export async function changePasswordAction(

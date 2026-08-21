@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import Link from "next/link";
 import { loginAction, type LoginState } from "@/lib/actions/auth";
 
 const initialState: LoginState = {};
@@ -42,6 +43,13 @@ export function LoginForm() {
           {state.error}
         </p>
       )}
+
+      <Link
+        href="/mot-de-passe-oublie"
+        className="-mt-1 text-right text-xs font-semibold text-ink-soft hover:text-ink"
+      >
+        Mot de passe oublié ?
+      </Link>
 
       <button
         type="submit"
