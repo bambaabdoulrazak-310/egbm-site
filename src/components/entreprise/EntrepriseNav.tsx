@@ -8,6 +8,7 @@ import {
   ExternalLink,
   FileText,
   Inbox,
+  KeyRound,
   LayoutDashboard,
   LogOut,
   Newspaper,
@@ -26,6 +27,7 @@ const BASE_ITEMS: Array<[href: string, label: string, Icon: typeof LayoutDashboa
   ["/espace-entreprise/commandes", "Commandes", ClipboardList],
   ["/espace-entreprise/demandes", "Demandes", Inbox],
   ["/espace-entreprise/facturation", "Facturation", FileText],
+  ["/espace-entreprise/mon-compte", "Mon compte", KeyRound],
 ];
 
 interface Props {
