@@ -1,10 +1,44 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { KeyRound } from "lucide-react";
 import { changePasswordAction, type PasswordFormState } from "@/lib/actions/account";
 
 const initialState: PasswordFormState = {};
+
+function PasswordField({
+  label,
+  name,
+  autoComplete,
+}: {
+  label: string;
+  name: string;
+  autoComplete: string;
+}) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div>
+      <label className="text-sm font-medium">{label}</label>
+      <div className="relative mt-1">
+        <input
+          name={name}
+          type={visible ? "text" : "password"}
+          required
+          minLength={name === "motdepasseActuel" ? undefined : 8}
+          autoComplete={autoComplete}
+          className="w-full rounded-md border border-border-egbm p-2 pr-16"
+        />
+        <button
+          type="button"
+          onClick={() => setVisible((v) => !v)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-ink-soft"
+        >
+          {visible ? "Masquer" : "Afficher"}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export function ChangePasswordForm() {
   const [state, formAction, pending] = useActionState(changePasswordAction, initialState);
@@ -20,35 +54,21 @@ export function ChangePasswordForm() {
       action={formAction}
       className="mt-4 flex max-w-sm flex-col gap-3 rounded-lg border border-border-egbm bg-cream p-4"
     >
-      <div>
-        <label className="text-sm font-medium">Mot de passe actuel</label>
-        <input
-          name="motdepasseActuel"
-          type="password"
-          required
-          className="mt-1 w-full rounded-md border border-border-egbm p-2"
-        />
-      </div>
-      <div>
-        <label className="text-sm font-medium">Nouveau mot de passe</label>
-        <input
-          name="nouveauMotdepasse"
-          type="password"
-          required
-          minLength={8}
-          className="mt-1 w-full rounded-md border border-border-egbm p-2"
-        />
-      </div>
-      <div>
-        <label className="text-sm font-medium">Confirmer le nouveau mot de passe</label>
-        <input
-          name="confirmerMotdepasse"
-          type="password"
-          required
-          minLength={8}
-          className="mt-1 w-full rounded-md border border-border-egbm p-2"
-        />
-      </div>
+      <PasswordField
+        label="Mot de passe actuel"
+        name="motdepasseActuel"
+        autoComplete="current-password"
+      />
+      <PasswordField
+        label="Nouveau mot de passe"
+        name="nouveauMotdepasse"
+        autoComplete="new-password"
+      />
+      <PasswordField
+        label="Confirmer le nouveau mot de passe"
+        name="confirmerMotdepasse"
+        autoComplete="new-password"
+      />
 
       {state.error && <p className="text-sm font-medium text-rust-dark">{state.error}</p>}
       {state.success && (
