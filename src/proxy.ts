@@ -1,21 +1,20 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { jwtVerify } from "jose";
+import { jwtVerify, SignJWT } from "jose";
+import { SESSION_COOKIE, SESSION_DURATION_SECONDS } from "@/lib/session";
 
-const SESSION_COOKIE = "egbm_session";
-
-async function hasValidSession(request: NextRequest) {
+async function verifySession(request: NextRequest) {
   const token = request.cookies.get(SESSION_COOKIE)?.value;
-  if (!token) return false;
+  if (!token) return null;
 
   const secret = process.env.AUTH_SECRET;
-  if (!secret) return false;
+  if (!secret) return null;
 
   try {
-    await jwtVerify(token, new TextEncoder().encode(secret));
-    return true;
+    const { payload } = await jwtVerify(token, new TextEncoder().encode(secret));
+    return payload;
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -23,12 +22,34 @@ async function hasValidSession(request: NextRequest) {
 // entreprise à un visiteur non connecté. Chaque page/Server Action revérifie
 // la session et le rôle indépendamment (voir src/lib/auth-guard.ts) : ce
 // proxy est une première ligne de défense, pas la seule.
+//
+// Le cookie est aussi renouvelé (durée glissante) à chaque requête valide :
+// 10 min d'inactivité déconnectent l'utilisateur, mais une utilisation active
+// ne l'interrompt jamais.
 export async function proxy(request: NextRequest) {
-  if (!(await hasValidSession(request))) {
+  const payload = await verifySession(request);
+  if (!payload) {
     const url = new URL("/connexion", request.url);
     return NextResponse.redirect(url);
   }
-  return NextResponse.next();
+
+  const secret = process.env.AUTH_SECRET!;
+  const refreshedToken = await new SignJWT({ name: payload.name, role: payload.role })
+    .setProtectedHeader({ alg: "HS256" })
+    .setSubject(payload.sub!)
+    .setIssuedAt()
+    .setExpirationTime(`${SESSION_DURATION_SECONDS}s`)
+    .sign(new TextEncoder().encode(secret));
+
+  const response = NextResponse.next();
+  response.cookies.set(SESSION_COOKIE, refreshedToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_DURATION_SECONDS,
+  });
+  return response;
 }
 
 export const config = {

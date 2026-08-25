@@ -2,8 +2,9 @@ import "server-only";
 import { cookies } from "next/headers";
 import { jwtVerify, SignJWT } from "jose";
 
-const SESSION_COOKIE = "egbm_session";
-const SESSION_DURATION_SECONDS = 60 * 60 * 24 * 7; // 7 jours
+export const SESSION_COOKIE = "egbm_session";
+// Déconnexion après 10 min d'inactivité (renouvelée à chaque requête, voir src/proxy.ts).
+export const SESSION_DURATION_SECONDS = 60 * 10;
 
 export type SessionRole = "ADMINISTRATEUR" | "GESTIONNAIRE";
 
