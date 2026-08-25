@@ -24,12 +24,13 @@ async function verifySession(request: NextRequest) {
 // proxy est une première ligne de défense, pas la seule.
 //
 // Le cookie est aussi renouvelé (durée glissante) à chaque requête valide :
-// 10 min d'inactivité déconnectent l'utilisateur, mais une utilisation active
+// 5 min d'inactivité déconnectent l'utilisateur, mais une utilisation active
 // ne l'interrompt jamais.
 export async function proxy(request: NextRequest) {
   const payload = await verifySession(request);
   if (!payload) {
     const url = new URL("/connexion", request.url);
+    url.searchParams.set("redirect", request.nextUrl.pathname + request.nextUrl.search);
     return NextResponse.redirect(url);
   }
 

@@ -33,7 +33,9 @@ export async function loginAction(
   }
 
   await createSession({ sub: user.id, name: user.name, role: user.role });
-  redirect("/espace-entreprise");
+
+  const redirectTo = String(formData.get("redirect") ?? "");
+  redirect(redirectTo.startsWith("/espace-entreprise") ? redirectTo : "/espace-entreprise");
 }
 
 export async function logoutAction() {

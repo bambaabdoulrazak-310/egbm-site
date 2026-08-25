@@ -8,10 +8,21 @@ export const metadata: Metadata = {
   title: "Connexion — Espace Entreprise",
 };
 
-export default async function ConnexionPage() {
+function isSafeRedirect(path: string | undefined): path is string {
+  return !!path && path.startsWith("/espace-entreprise");
+}
+
+export default async function ConnexionPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ redirect?: string }>;
+}) {
+  const { redirect: redirectTo } = await searchParams;
+  const safeRedirect = isSafeRedirect(redirectTo) ? redirectTo : "/espace-entreprise";
+
   const session = await getSession();
   if (session) {
-    redirect("/espace-entreprise");
+    redirect(safeRedirect);
   }
 
   return (
@@ -28,7 +39,7 @@ export default async function ConnexionPage() {
           <h1 className="font-display text-2xl font-extrabold">Espace Entreprise</h1>
           <p className="text-xs text-ink-soft">Accès réservé au personnel autorisé</p>
         </div>
-        <LoginForm />
+        <LoginForm redirectTo={safeRedirect} />
       </div>
     </div>
   );
