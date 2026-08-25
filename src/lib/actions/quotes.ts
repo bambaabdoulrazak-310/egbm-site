@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
+import { notifyNewQuoteRequest } from "@/lib/notify";
 
 export interface QuoteRequestState {
   error?: string;
@@ -25,6 +26,17 @@ export async function createQuoteRequestAction(
   await prisma.quoteRequest.create({
     data: { clientName, clientPhone, clientEmail: clientEmail || null, message },
   });
+
+  try {
+    await notifyNewQuoteRequest({
+      clientName,
+      clientPhone,
+      clientEmail: clientEmail || null,
+      message,
+    });
+  } catch (err) {
+    console.error("Échec de la notification de demande de devis :", err);
+  }
 
   return { success: true };
 }

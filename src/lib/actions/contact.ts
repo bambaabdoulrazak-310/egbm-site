@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
+import { notifyNewContactMessage } from "@/lib/notify";
 
 export interface ContactState {
   error?: string;
@@ -21,6 +22,12 @@ export async function sendContactMessageAction(
   }
 
   await prisma.contactMessage.create({ data: { name, message } });
+
+  try {
+    await notifyNewContactMessage({ name, message });
+  } catch (err) {
+    console.error("Échec de la notification de message de contact :", err);
+  }
 
   return { success: true };
 }

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
+import { notifyNewOrder } from "@/lib/notify";
 
 export interface OrderState {
   error?: string;
@@ -64,6 +65,12 @@ export async function createOrderAction(
       items: { create: items },
     },
   });
+
+  try {
+    await notifyNewOrder({ clientName: nom, clientPhone: tel, clientAddress: adresse || null, total });
+  } catch (err) {
+    console.error("Échec de la notification de commande :", err);
+  }
 
   return { success: true };
 }

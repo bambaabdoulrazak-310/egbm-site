@@ -87,3 +87,15 @@ export async function changePasswordAction(
 
   return { success: true };
 }
+
+export async function toggleNotifyByEmailAction(formData: FormData) {
+  const session = await requireSession();
+  const notifyByEmail = formData.get("notifyByEmail") === "on";
+
+  await prisma.user.update({
+    where: { id: session.sub },
+    data: { notifyByEmail },
+  });
+
+  revalidatePath("/espace-entreprise/mon-compte");
+}
