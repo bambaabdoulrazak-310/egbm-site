@@ -4,12 +4,14 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guard";
 import { hashPassword, generateTemporaryPassword } from "@/lib/password";
+import { sendNewAccountEmail } from "@/lib/email";
 
 export interface UserFormState {
   error?: string;
   success?: boolean;
   generatedPassword?: string;
   generatedEmail?: string;
+  emailSent?: boolean;
 }
 
 export async function inviteUserAction(
@@ -38,8 +40,16 @@ export async function inviteUserAction(
     data: { name, email, passwordHash, role: "GESTIONNAIRE" },
   });
 
+  let emailSent = true;
+  try {
+    await sendNewAccountEmail(email, name, temporaryPassword);
+  } catch (err) {
+    console.error("Échec de l'envoi de l'email de bienvenue :", err);
+    emailSent = false;
+  }
+
   revalidatePath("/espace-entreprise/utilisateurs");
-  return { success: true, generatedPassword: temporaryPassword, generatedEmail: email };
+  return { success: true, generatedPassword: temporaryPassword, generatedEmail: email, emailSent };
 }
 
 export async function revokeUserAction(formData: FormData) {

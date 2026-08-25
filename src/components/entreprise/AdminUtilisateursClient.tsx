@@ -67,7 +67,9 @@ export function AdminUtilisateursClient({
             <KeyRound size={16} /> Compte créé pour {state.generatedEmail}
           </div>
           <p className="text-sm text-ink-soft">
-            Mot de passe temporaire (communiquez-le à cette personne — il ne sera plus jamais affiché) :
+            {state.emailSent
+              ? "Un email avec ces identifiants vient de lui être envoyé. Vous pouvez aussi les noter ici :"
+              : "L'envoi de l'email a échoué — communiquez ce mot de passe vous-même (il ne sera plus jamais affiché) :"}
           </p>
           <div className="w-fit rounded-md bg-white px-3 py-2 font-mono text-lg font-bold tracking-wide">
             {state.generatedPassword}
