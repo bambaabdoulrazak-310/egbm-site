@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
-import { Trash2, UserPlus } from "lucide-react";
+import { KeyRound, Trash2, UserPlus } from "lucide-react";
 import { inviteUserAction, revokeUserAction, type UserFormState } from "@/lib/actions/users";
 
 export interface AdminUser {
@@ -41,7 +41,7 @@ export function AdminUtilisateursClient({
       <form
         ref={formRef}
         action={formAction}
-        className="mt-4 grid gap-3 rounded-lg border border-border-egbm bg-cream p-4 md:grid-cols-4"
+        className="mt-4 grid gap-3 rounded-lg border border-border-egbm bg-cream p-4 md:grid-cols-3"
       >
         <input name="nom" required placeholder="Nom complet" className="rounded-md border border-border-egbm p-2" />
         <input
@@ -51,14 +51,6 @@ export function AdminUtilisateursClient({
           placeholder="Email"
           className="rounded-md border border-border-egbm p-2"
         />
-        <input
-          name="motdepasse"
-          type="text"
-          required
-          minLength={8}
-          placeholder="Mot de passe temporaire"
-          className="rounded-md border border-border-egbm p-2"
-        />
         <button
           type="submit"
           disabled={pending}
@@ -66,8 +58,22 @@ export function AdminUtilisateursClient({
         >
           <UserPlus size={16} /> Autoriser
         </button>
-        {state.error && <p className="text-sm font-medium text-rust-dark md:col-span-4">{state.error}</p>}
+        {state.error && <p className="text-sm font-medium text-rust-dark md:col-span-3">{state.error}</p>}
       </form>
+
+      {state.success && state.generatedPassword && (
+        <div className="mt-3 flex flex-col gap-1 rounded-lg border-2 border-green bg-green/10 p-4">
+          <div className="flex items-center gap-1.5 font-semibold text-green">
+            <KeyRound size={16} /> Compte créé pour {state.generatedEmail}
+          </div>
+          <p className="text-sm text-ink-soft">
+            Mot de passe temporaire (communiquez-le à cette personne — il ne sera plus jamais affiché) :
+          </p>
+          <div className="w-fit rounded-md bg-white px-3 py-2 font-mono text-lg font-bold tracking-wide">
+            {state.generatedPassword}
+          </div>
+        </div>
+      )}
 
       <div className="mt-5 flex flex-col gap-2">
         {users.map((u) => (

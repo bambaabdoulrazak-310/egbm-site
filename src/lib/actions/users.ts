@@ -3,11 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guard";
-import { hashPassword } from "@/lib/password";
+import { hashPassword, generateTemporaryPassword } from "@/lib/password";
 
 export interface UserFormState {
   error?: string;
   success?: boolean;
+  generatedPassword?: string;
+  generatedEmail?: string;
 }
 
 export async function inviteUserAction(
@@ -20,13 +22,9 @@ export async function inviteUserAction(
   const email = String(formData.get("email") ?? "")
     .trim()
     .toLowerCase();
-  const password = String(formData.get("motdepasse") ?? "");
 
-  if (!name || !email || password.length < 8) {
-    return {
-      error:
-        "Nom, email et mot de passe requis (mot de passe : 8 caractères minimum).",
-    };
+  if (!name || !email) {
+    return { error: "Nom et email requis." };
   }
 
   const existing = await prisma.user.findUnique({ where: { email } });
@@ -34,13 +32,14 @@ export async function inviteUserAction(
     return { error: "Un compte existe déjà avec cet email." };
   }
 
-  const passwordHash = await hashPassword(password);
+  const temporaryPassword = generateTemporaryPassword();
+  const passwordHash = await hashPassword(temporaryPassword);
   await prisma.user.create({
     data: { name, email, passwordHash, role: "GESTIONNAIRE" },
   });
 
   revalidatePath("/espace-entreprise/utilisateurs");
-  return { success: true };
+  return { success: true, generatedPassword: temporaryPassword, generatedEmail: email };
 }
 
 export async function revokeUserAction(formData: FormData) {
