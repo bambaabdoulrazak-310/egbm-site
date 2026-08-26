@@ -76,7 +76,10 @@ export async function createOrderAction(
     } catch {
       detail = String(err);
     }
-    return { success: true, error: `[DEBUG] ${detail}` };
+    return {
+      success: true,
+      error: `[DEBUG] from-env=${JSON.stringify(process.env.RESEND_FROM_EMAIL)} err=${detail}`,
+    };
   }
 
   return { success: true };
