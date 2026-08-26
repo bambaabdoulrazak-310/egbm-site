@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
 import { notifyNewOrder } from "@/lib/notify";
@@ -66,11 +67,13 @@ export async function createOrderAction(
     },
   });
 
-  try {
-    await notifyNewOrder({ clientName: nom, clientPhone: tel, clientAddress: adresse || null, total });
-  } catch (err) {
-    console.error("Échec de la notification de commande :", err);
-  }
+  after(async () => {
+    try {
+      await notifyNewOrder({ clientName: nom, clientPhone: tel, clientAddress: adresse || null, total });
+    } catch (err) {
+      console.error("Échec de la notification de commande :", err);
+    }
+  });
 
   return { success: true };
 }

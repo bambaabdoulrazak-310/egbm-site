@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
 import { notifyNewQuoteRequest } from "@/lib/notify";
@@ -27,16 +28,18 @@ export async function createQuoteRequestAction(
     data: { clientName, clientPhone, clientEmail: clientEmail || null, message },
   });
 
-  try {
-    await notifyNewQuoteRequest({
-      clientName,
-      clientPhone,
-      clientEmail: clientEmail || null,
-      message,
-    });
-  } catch (err) {
-    console.error("Échec de la notification de demande de devis :", err);
-  }
+  after(async () => {
+    try {
+      await notifyNewQuoteRequest({
+        clientName,
+        clientPhone,
+        clientEmail: clientEmail || null,
+        message,
+      });
+    } catch (err) {
+      console.error("Échec de la notification de demande de devis :", err);
+    }
+  });
 
   return { success: true };
 }
