@@ -67,20 +67,13 @@ export async function createOrderAction(
     },
   });
 
-  try {
-    await notifyNewOrder({ clientName: nom, clientPhone: tel, clientAddress: adresse || null, total });
-  } catch (err) {
-    let detail: string;
+  after(async () => {
     try {
-      detail = JSON.stringify(err, Object.getOwnPropertyNames(err as object));
-    } catch {
-      detail = String(err);
+      await notifyNewOrder({ clientName: nom, clientPhone: tel, clientAddress: adresse || null, total });
+    } catch (err) {
+      console.error("Échec de la notification de commande :", err);
     }
-    return {
-      success: true,
-      error: `[DEBUG] from-env=${JSON.stringify(process.env.RESEND_FROM_EMAIL)} err=${detail}`,
-    };
-  }
+  });
 
   return { success: true };
 }
