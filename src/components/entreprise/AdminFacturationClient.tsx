@@ -3,8 +3,8 @@
 import { useActionState, useEffect, useState } from "react";
 import { Plus, Printer, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { Stamp } from "@/components/site/Stamp";
 import { formatFCFA } from "@/lib/catalog";
+import { numberToFrenchWords } from "@/lib/numberToWords";
 import { generateDocumentAction, type DocumentFormState } from "@/lib/actions/documents";
 
 export interface FactProduit {
@@ -23,7 +23,9 @@ export interface GeneratedDocument {
 interface Ligne {
   productId: string;
   qty: number;
-  prix: number;
+  prixBrut: number;
+  remise: number;
+  prixNet: number;
 }
 
 const TYPES = [
@@ -32,49 +34,83 @@ const TYPES = [
   ["DEVIS", "Devis"],
 ] as const;
 
-const PREFIXES: Record<string, string> = { FACTURE: "FAC", PROFORMA: "PRO", DEVIS: "DEV" };
-
 const initialState: DocumentFormState = {};
+
+function round(n: number) {
+  return Math.round(n);
+}
 
 export function AdminFacturationClient({
   products,
   documents,
+  nextNumberHints,
 }: {
   products: FactProduit[];
   documents: GeneratedDocument[];
+  nextNumberHints: Record<(typeof TYPES)[number][0], string>;
 }) {
   const [type, setType] = useState<(typeof TYPES)[number][0]>("FACTURE");
+  const [number, setNumber] = useState(nextNumberHints.FACTURE);
   const [clientName, setClientName] = useState("");
   const [clientContact, setClientContact] = useState("");
+  const [clientAddress, setClientAddress] = useState("");
+  const [objet, setObjet] = useState("");
+  const [vatApplicable, setVatApplicable] = useState(true);
+  const [validityDays, setValidityDays] = useState("15");
   const [lignes, setLignes] = useState<Ligne[]>([]);
   const [state, formAction, pending] = useActionState(generateDocumentAction, initialState);
 
   useEffect(() => {
-    // Réinitialise le formulaire local une fois le document généré côté serveur.
     if (state.success) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setClientName("");
       setClientContact("");
+      setClientAddress("");
+      setObjet("");
       setLignes([]);
     }
   }, [state.success]);
 
-  const addLigne = () =>
-    setLignes((l) => [...l, { productId: products[0]?.id ?? "", qty: 1, prix: products[0]?.price ?? 0 }]);
+  const changeType = (value: (typeof TYPES)[number][0]) => {
+    setType(value);
+    setNumber(nextNumberHints[value]);
+  };
+
+  const addLigne = () => {
+    const prod = products[0];
+    setLignes((l) => [
+      ...l,
+      { productId: prod?.id ?? "", qty: 1, prixBrut: prod?.price ?? 0, remise: 0, prixNet: prod?.price ?? 0 },
+    ]);
+  };
   const updateLigne = (i: number, patch: Partial<Ligne>) =>
     setLignes((l) => l.map((ln, idx) => (idx === i ? { ...ln, ...patch } : ln)));
   const removeLigne = (i: number) => setLignes((l) => l.filter((_, idx) => idx !== i));
 
-  const sousTotal = lignes.reduce((s, l) => s + l.qty * l.prix, 0);
-  const tva = Math.round(sousTotal * 0.18);
+  const setLigneBrutOrRemise = (i: number, patch: { prixBrut?: number; remise?: number }) => {
+    setLignes((l) =>
+      l.map((ln, idx) => {
+        if (idx !== i) return ln;
+        const next = { ...ln, ...patch };
+        next.prixNet = round(next.prixBrut * (1 - next.remise / 100));
+        return next;
+      })
+    );
+  };
+
+  const sousTotal = lignes.reduce((s, l) => s + l.qty * l.prixNet, 0);
+  const tva = vatApplicable ? round(sousTotal * 0.18) : 0;
   const total = sousTotal + tva;
+  const validityDaysNum = Number(validityDays) || 0;
 
   const linesPayload = JSON.stringify(
     lignes.map((l) => ({
       productId: l.productId,
       productName: products.find((p) => p.id === l.productId)?.name ?? "",
       qty: l.qty,
-      prix: l.prix,
+      prixBrut: l.prixBrut,
+      remise: l.remise,
+      prixNet: l.prixNet,
     }))
   );
 
@@ -85,12 +121,13 @@ export function AdminFacturationClient({
       <div className="mt-5 grid gap-6 md:grid-cols-2">
         <form action={formAction} className="rounded-lg border border-border-egbm bg-cream p-4 print:hidden">
           <input type="hidden" name="lines" value={linesPayload} />
+          <input type="hidden" name="type" value={type} />
           <div className="mb-3 flex gap-2">
             {TYPES.map(([value, label]) => (
               <button
                 key={value}
                 type="button"
-                onClick={() => setType(value)}
+                onClick={() => changeType(value)}
                 className={`rounded-full px-3 py-1.5 text-sm font-semibold ${
                   type === value ? "bg-green text-white" : "bg-bg-alt text-ink"
                 }`}
@@ -99,9 +136,17 @@ export function AdminFacturationClient({
               </button>
             ))}
           </div>
-          <input type="hidden" name="type" value={type} />
 
-          <div className="grid grid-cols-2 gap-2">
+          <label className="text-xs font-semibold text-ink-soft">N° du document</label>
+          <input
+            name="number"
+            value={number}
+            onChange={(e) => setNumber(e.target.value)}
+            required
+            className="mt-1 w-full rounded-md border border-border-egbm p-2 font-mono text-sm"
+          />
+
+          <div className="mt-3 grid grid-cols-2 gap-2">
             <input
               name="clientName"
               value={clientName}
@@ -118,6 +163,43 @@ export function AdminFacturationClient({
               className="rounded-md border border-border-egbm p-2"
             />
           </div>
+          <input
+            name="clientAddress"
+            value={clientAddress}
+            onChange={(e) => setClientAddress(e.target.value)}
+            placeholder="Adresse du client"
+            className="mt-2 w-full rounded-md border border-border-egbm p-2"
+          />
+          <input
+            name="objet"
+            value={objet}
+            onChange={(e) => setObjet(e.target.value)}
+            placeholder="Objet (ex: Achat de tableau & markers)"
+            className="mt-2 w-full rounded-md border border-border-egbm p-2"
+          />
+
+          <div className="mt-3 flex flex-wrap items-center gap-4 text-sm">
+            <label className="flex items-center gap-1.5">
+              <input
+                type="checkbox"
+                name="vatApplicable"
+                checked={vatApplicable}
+                onChange={(e) => setVatApplicable(e.target.checked)}
+              />
+              TVA 18% applicable
+            </label>
+            <label className="flex items-center gap-1.5">
+              Validité (jours)
+              <input
+                type="number"
+                name="validityDays"
+                min={0}
+                value={validityDays}
+                onChange={(e) => setValidityDays(e.target.value)}
+                className="w-16 rounded-md border border-border-egbm p-1"
+              />
+            </label>
+          </div>
 
           <div className="mt-4 flex flex-col gap-2">
             {lignes.map((l, i) => (
@@ -126,9 +208,10 @@ export function AdminFacturationClient({
                   value={l.productId}
                   onChange={(e) => {
                     const prod = products.find((p) => p.id === e.target.value);
-                    updateLigne(i, { productId: e.target.value, prix: prod?.price ?? 0 });
+                    updateLigne(i, { productId: e.target.value });
+                    setLigneBrutOrRemise(i, { prixBrut: prod?.price ?? 0 });
                   }}
-                  className="col-span-2 rounded-md border border-border-egbm p-2 text-sm md:col-span-6"
+                  className="col-span-2 rounded-md border border-border-egbm p-2 text-sm md:col-span-4"
                 >
                   {products.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -142,15 +225,36 @@ export function AdminFacturationClient({
                   value={l.qty}
                   onChange={(e) => updateLigne(i, { qty: Number(e.target.value) || 1 })}
                   placeholder="Qté"
+                  title="Quantité"
+                  className="col-span-1 w-full rounded-md border border-border-egbm p-2 text-sm md:col-span-1"
+                />
+                <input
+                  type="number"
+                  min={0}
+                  value={l.prixBrut}
+                  onChange={(e) => setLigneBrutOrRemise(i, { prixBrut: Number(e.target.value) || 0 })}
+                  placeholder="PU Brut"
+                  title="Prix unitaire brut"
                   className="col-span-1 w-full rounded-md border border-border-egbm p-2 text-sm md:col-span-2"
                 />
                 <input
                   type="number"
                   min={0}
-                  value={l.prix}
-                  onChange={(e) => updateLigne(i, { prix: Number(e.target.value) || 0 })}
-                  placeholder="Prix"
-                  className="col-span-1 w-full rounded-md border border-border-egbm p-2 text-sm md:col-span-3"
+                  max={100}
+                  value={l.remise}
+                  onChange={(e) => setLigneBrutOrRemise(i, { remise: Number(e.target.value) || 0 })}
+                  placeholder="Remise %"
+                  title="Remise (%)"
+                  className="col-span-1 w-full rounded-md border border-border-egbm p-2 text-sm md:col-span-1"
+                />
+                <input
+                  type="number"
+                  min={0}
+                  value={l.prixNet}
+                  onChange={(e) => updateLigne(i, { prixNet: Number(e.target.value) || 0 })}
+                  placeholder="PU Net"
+                  title="Prix unitaire net (modifiable)"
+                  className="col-span-1 w-full rounded-md border border-border-egbm p-2 text-sm md:col-span-2"
                 />
                 <button
                   type="button"
@@ -176,8 +280,8 @@ export function AdminFacturationClient({
               <span>{formatFCFA(sousTotal)}</span>
             </div>
             <div className="flex justify-between">
-              <span>TVA (18%)</span>
-              <span>{formatFCFA(tva)}</span>
+              <span>{vatApplicable ? "TVA (18%)" : "TVA"}</span>
+              <span>{vatApplicable ? formatFCFA(tva) : "Non facturée"}</span>
             </div>
             <div className="flex justify-between font-bold">
               <span>Total</span>
@@ -196,60 +300,112 @@ export function AdminFacturationClient({
           </button>
         </form>
 
-        <div id="facture-preview" className="rounded-lg border border-border-egbm bg-paper p-5">
-          <div className="flex items-start justify-between">
+        <div id="facture-preview" className="rounded-lg border border-border-egbm bg-paper p-5 text-[13px] leading-snug print:border-0 print:p-0 print:text-xs">
+          <div className="flex items-start justify-between border-b-2 border-ink pb-2">
             <div className="flex items-center gap-2">
-              <Image src="/logo.jpg" alt="Logo EGBM" width={40} height={40} className="rounded-full object-cover" />
+              <Image src="/logo.jpg" alt="Logo EGBM" width={44} height={44} className="rounded-full object-cover" />
               <div>
-                <div className="font-display text-[22px] font-extrabold">EGBM</div>
-                <div className="text-xs text-ink-soft">
-                  Entreprise Générale Bamba Mamadou
-                  <br />
-                  Korhogo, Côte d&apos;Ivoire
+                <div className="font-display text-xl font-extrabold">E.G.B.M.</div>
+                <div className="text-[11px] font-semibold">ENTREPRISE GENERALE BAMBA MAMADOU — SARL</div>
+                <div className="text-[10px] text-ink-soft">
+                  Génie civil · Distribution agro-chimie · Appareils de traitement & pièces détachées ·
+                  Matériels industriels · Fournitures de bureau · Prestations de services
                 </div>
               </div>
             </div>
-            <Stamp label={TYPES.find(([v]) => v === type)?.[1].toUpperCase() ?? type} />
           </div>
-          <div className="mt-3 font-mono text-xs text-ink-soft">
-            N° {PREFIXES[type]}-{new Date().getFullYear()}-??? (aperçu) ·{" "}
-            {new Date().toISOString().slice(0, 10)}
+
+          <div className="mt-2 text-center font-display text-2xl font-extrabold tracking-wide">
+            {TYPES.find(([v]) => v === type)?.[1].toUpperCase()}
           </div>
+
+          <div className="mt-2 flex justify-between font-mono text-xs">
+            <span>DATE : {new Date().toLocaleDateString("fr-FR")}</span>
+            <span>N° {number || "—"}</span>
+          </div>
+
           <div className="mt-3 text-sm">
-            <div className="font-semibold">Client :</div>
-            <div>{clientName || "—"}</div>
-            <div className="text-ink-soft">{clientContact}</div>
+            <div className="font-semibold">DOIT :</div>
+            <div className="font-bold uppercase">{clientName || "—"}</div>
+            {clientAddress && <div>Adresse : {clientAddress}</div>}
+            {clientContact && <div>Contact : {clientContact}</div>}
           </div>
-          <table className="mt-4 w-full text-sm">
+          {objet && (
+            <div className="mt-2 text-sm">
+              <span className="font-semibold">OBJET :</span> {objet}
+            </div>
+          )}
+
+          <table className="mt-3 w-full border-collapse text-xs">
             <thead>
-              <tr className="border-b border-border-egbm">
-                <th className="py-1 text-left">Article</th>
-                <th className="py-1 text-right">Qté</th>
-                <th className="py-1 text-right">P.U.</th>
-                <th className="py-1 text-right">Total</th>
+              <tr className="border-y border-ink text-left">
+                <th className="py-1 pr-1">N°</th>
+                <th className="py-1 pr-1">Désignation</th>
+                <th className="py-1 pr-1 text-right">Qtés</th>
+                <th className="py-1 pr-1 text-right">PU Brut</th>
+                <th className="py-1 pr-1 text-right">Remise</th>
+                <th className="py-1 pr-1 text-right">PU Net</th>
+                <th className="py-1 text-right">Prix Total</th>
               </tr>
             </thead>
             <tbody>
               {lignes.map((l, i) => {
                 const prod = products.find((p) => p.id === l.productId);
                 return (
-                  <tr key={i}>
-                    <td className="py-1">{prod?.name}</td>
-                    <td className="py-1 text-right">{l.qty}</td>
-                    <td className="py-1 text-right font-mono">{l.prix.toLocaleString("fr-FR")}</td>
-                    <td className="py-1 text-right font-mono">
-                      {(l.qty * l.prix).toLocaleString("fr-FR")}
-                    </td>
+                  <tr key={i} className="border-b border-border-egbm">
+                    <td className="py-1 pr-1">{String(i + 1).padStart(2, "0")}</td>
+                    <td className="py-1 pr-1">{prod?.name}</td>
+                    <td className="py-1 pr-1 text-right font-mono">{l.qty}</td>
+                    <td className="py-1 pr-1 text-right font-mono">{l.prixBrut.toLocaleString("fr-FR")}</td>
+                    <td className="py-1 pr-1 text-right font-mono">{l.remise}%</td>
+                    <td className="py-1 pr-1 text-right font-mono">{l.prixNet.toLocaleString("fr-FR")}</td>
+                    <td className="py-1 text-right font-mono">{(l.qty * l.prixNet).toLocaleString("fr-FR")}</td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-          <div className="mt-3 flex flex-col items-end font-mono text-sm">
-            <div>Sous-total : {formatFCFA(sousTotal)}</div>
-            <div>TVA 18% : {formatFCFA(tva)}</div>
-            <div className="font-bold">Total : {formatFCFA(total)}</div>
+
+          <div className="mt-2 flex flex-col items-end font-mono text-xs">
+            <div className="flex w-48 justify-between">
+              <span>MONTANT HT</span>
+              <span>{sousTotal.toLocaleString("fr-FR")}</span>
+            </div>
+            <div className="flex w-48 justify-between">
+              <span>TVA 18%</span>
+              <span>{vatApplicable ? tva.toLocaleString("fr-FR") : "NON FACTUREE"}</span>
+            </div>
+            <div className="flex w-48 justify-between border-t border-ink pt-0.5 font-bold">
+              <span>TOTAL TTC</span>
+              <span>{total.toLocaleString("fr-FR")}</span>
+            </div>
           </div>
+
+          {total > 0 && (
+            <p className="mt-3 text-xs italic">
+              Arrêté la présente {TYPES.find(([v]) => v === type)?.[1].toLowerCase()} à la somme de :{" "}
+              {numberToFrenchWords(total)} ({total.toLocaleString("fr-FR")}) Francs CFA
+            </p>
+          )}
+          {validityDaysNum > 0 && (type === "PROFORMA" || type === "DEVIS") && (
+            <p className="mt-1 text-xs italic">Cette offre est valable pour {validityDaysNum} Jours</p>
+          )}
+
+          <div className="mt-8 flex justify-end">
+            <div className="flex flex-col items-center gap-1 text-xs">
+              <span className="font-semibold">Le Directeur</span>
+              <Image src="/stamp-egbm.jpg" alt="Cachet EGBM" width={130} height={80} className="object-contain" />
+            </div>
+          </div>
+
+          <div className="mt-6 border-t border-border-egbm pt-2 text-center text-[9px] text-ink-soft">
+            <div>
+              Siège social Korhogo Qt Lognon — BP 739 Kgo — Tél 08 47 85 37 / 05 92 52 53 — Email :
+              egbm2011@yahoo.fr — Capital 1 000 000
+            </div>
+            <div>RC : CI-KGO-2011-B-176 — CC 1112544 L / CB 03534180000 BNI — Centre d&apos;imposition de Soba — RSI</div>
+          </div>
+
           <button
             type="button"
             onClick={() => window.print()}

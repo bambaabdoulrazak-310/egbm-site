@@ -131,28 +131,34 @@ model DocumentCounter {
 }
 
 model Document {
-  id            String       @id @default(cuid())
-  number        String       @unique
-  type          DocumentType
-  clientName    String
-  clientContact String?
-  subtotal      Int
-  vat           Int
-  total         Int
-  createdAt     DateTime     @default(now())
+  id             String       @id @default(cuid())
+  number         String       @unique
+  type           DocumentType
+  clientName     String
+  clientContact  String?
+  clientAddress  String?
+  objet          String?
+  vatApplicable  Boolean      @default(true)
+  validityDays   Int?
+  subtotal       Int
+  vat            Int
+  total          Int
+  createdAt      DateTime     @default(now())
 
   lines DocumentLine[]
 }
 
 model DocumentLine {
-  id          String   @id @default(cuid())
-  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  documentId  String
-  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
-  productId   String?
-  productName String
-  quantity    Int
-  unitPrice   Int
+  id              String   @id @default(cuid())
+  document        Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId      String
+  product         Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId       String?
+  productName     String
+  quantity        Int
+  unitPriceGross  Int
+  discountPercent Int      @default(0)
+  unitPrice       Int
 }
 
 model ContactMessage {
