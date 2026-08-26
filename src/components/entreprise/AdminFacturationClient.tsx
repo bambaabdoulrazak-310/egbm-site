@@ -301,28 +301,14 @@ export function AdminFacturationClient({
         </form>
 
         <div id="facture-preview" className="rounded-lg border border-border-egbm bg-paper p-5 text-[13px] leading-snug print:border-0 print:p-0 print:text-xs">
-          <div className="flex items-start justify-between border-b-2 border-ink pb-2">
-            <div className="flex items-center gap-2">
-              <Image src="/logo.jpg" alt="Logo EGBM" width={44} height={44} className="rounded-full object-cover" />
-              <div>
-                <div
-                  className="font-display text-xl font-extrabold"
-                  style={{
-                    backgroundImage: "linear-gradient(to right, #008000 0%, #FF3300 50%, #008000 100%)",
-                    WebkitBackgroundClip: "text",
-                    backgroundClip: "text",
-                    color: "transparent",
-                  }}
-                >
-                  E.G.B.M.
-                </div>
-                <div className="text-[11px] font-semibold">ENTREPRISE GENERALE BAMBA MAMADOU — SARL</div>
-                <div className="text-[10px] text-ink-soft">
-                  Génie civil · Distribution agro-chimie · Appareils de traitement & pièces détachées ·
-                  Matériels industriels · Fournitures de bureau · Prestations de services
-                </div>
-              </div>
-            </div>
+          <div className="border-b-2 border-ink pb-2">
+            <Image
+              src="/facturation-entete.png"
+              alt="EGBM — Entreprise Générale Bamba Mamadou, SARL"
+              width={995}
+              height={165}
+              className="mx-auto h-auto w-full max-w-[520px]"
+            />
           </div>
 
           <div className="mt-2 text-center font-display text-2xl font-extrabold tracking-wide">
