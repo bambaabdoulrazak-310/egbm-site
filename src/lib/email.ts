@@ -9,10 +9,25 @@ function getResend() {
   return new Resend(apiKey);
 }
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Une nouvelle tentative après un court délai absorbe les échecs ponctuels
+// (blip réseau, cold start juste après un déploiement, etc.).
 export async function sendEmail(to: string | string[], subject: string, html: string) {
   const resend = getResend();
   const from = process.env.RESEND_FROM_EMAIL ?? "EGBM <onboarding@resend.dev>";
-  await resend.emails.send({ from, to, subject, html });
+
+  try {
+    const { error } = await resend.emails.send({ from, to, subject, html });
+    if (error) throw error;
+  } catch (err) {
+    console.error("Premier envoi d'email échoué, nouvelle tentative :", err);
+    await sleep(1500);
+    const { error } = await resend.emails.send({ from, to, subject, html });
+    if (error) throw error;
+  }
 }
 
 export async function sendPasswordResetEmail(to: string, resetUrl: string) {
