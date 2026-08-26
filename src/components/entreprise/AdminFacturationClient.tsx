@@ -305,7 +305,17 @@ export function AdminFacturationClient({
             <div className="flex items-center gap-2">
               <Image src="/logo.jpg" alt="Logo EGBM" width={44} height={44} className="rounded-full object-cover" />
               <div>
-                <div className="font-display text-xl font-extrabold">E.G.B.M.</div>
+                <div
+                  className="font-display text-xl font-extrabold"
+                  style={{
+                    backgroundImage: "linear-gradient(to right, #008000 0%, #FF3300 50%, #008000 100%)",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    color: "transparent",
+                  }}
+                >
+                  E.G.B.M.
+                </div>
                 <div className="text-[11px] font-semibold">ENTREPRISE GENERALE BAMBA MAMADOU — SARL</div>
                 <div className="text-[10px] text-ink-soft">
                   Génie civil · Distribution agro-chimie · Appareils de traitement & pièces détachées ·
