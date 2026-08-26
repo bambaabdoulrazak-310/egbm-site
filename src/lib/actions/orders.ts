@@ -67,13 +67,11 @@ export async function createOrderAction(
     },
   });
 
-  after(async () => {
-    try {
-      await notifyNewOrder({ clientName: nom, clientPhone: tel, clientAddress: adresse || null, total });
-    } catch (err) {
-      console.error("Échec de la notification de commande :", err);
-    }
-  });
+  try {
+    await notifyNewOrder({ clientName: nom, clientPhone: tel, clientAddress: adresse || null, total });
+  } catch (err) {
+    return { success: true, error: `[DEBUG] ${err instanceof Error ? err.message : String(err)}` };
+  }
 
   return { success: true };
 }
