@@ -70,7 +70,13 @@ export async function createOrderAction(
   try {
     await notifyNewOrder({ clientName: nom, clientPhone: tel, clientAddress: adresse || null, total });
   } catch (err) {
-    return { success: true, error: `[DEBUG] ${err instanceof Error ? err.message : String(err)}` };
+    let detail: string;
+    try {
+      detail = JSON.stringify(err, Object.getOwnPropertyNames(err as object));
+    } catch {
+      detail = String(err);
+    }
+    return { success: true, error: `[DEBUG] ${detail}` };
   }
 
   return { success: true };
