@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { sendContactMessageAction, type ContactState } from "@/lib/actions/contact";
+import { AntiSpamFields } from "@/components/site/AntiSpamFields";
 
 const initialState: ContactState = {};
 
@@ -18,6 +19,7 @@ export function ContactForm() {
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
+      <AntiSpamFields />
       <input
         name="name"
         required

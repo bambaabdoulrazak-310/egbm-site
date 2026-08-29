@@ -5,6 +5,7 @@ import { CheckCircle2, Minus, Plus } from "lucide-react";
 import { useCart } from "@/components/site/CartProvider";
 import { formatFCFA } from "@/lib/catalog";
 import { createOrderAction, type OrderState } from "@/lib/actions/orders";
+import { AntiSpamFields } from "@/components/site/AntiSpamFields";
 
 export interface CommandeProduit {
   id: string;
@@ -84,6 +85,7 @@ export function CommandeClient({ products }: { products: CommandeProduit[] }) {
         <div>
           <h2 className="font-display text-[22px] font-bold">Vos informations</h2>
           <form action={formAction} className="mt-3 flex flex-col gap-3">
+            <AntiSpamFields />
             <input type="hidden" name="panier" value={JSON.stringify(cart)} />
             <input
               name="nom"

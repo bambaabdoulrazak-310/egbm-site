@@ -6,6 +6,7 @@ import { after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
 import { notifyNewOrder } from "@/lib/notify";
+import { isLikelySpam } from "@/lib/antispam";
 
 export interface OrderState {
   error?: string;
@@ -25,6 +26,10 @@ export async function createOrderAction(
 
   if (!nom || !tel) {
     return { error: "Veuillez renseigner votre nom et votre téléphone." };
+  }
+
+  if (isLikelySpam(formData)) {
+    return { success: true };
   }
 
   let panier: Record<string, number>;

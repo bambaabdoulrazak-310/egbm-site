@@ -5,6 +5,7 @@ import { after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
 import { notifyNewQuoteRequest } from "@/lib/notify";
+import { isLikelySpam } from "@/lib/antispam";
 
 export interface QuoteRequestState {
   error?: string;
@@ -22,6 +23,10 @@ export async function createQuoteRequestAction(
 
   if (!clientName || !clientPhone || !message) {
     return { error: "Veuillez renseigner votre nom, votre téléphone et votre besoin." };
+  }
+
+  if (isLikelySpam(formData)) {
+    return { success: true };
   }
 
   await prisma.quoteRequest.create({

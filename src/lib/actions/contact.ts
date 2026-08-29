@@ -5,6 +5,7 @@ import { after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
 import { notifyNewContactMessage } from "@/lib/notify";
+import { isLikelySpam } from "@/lib/antispam";
 
 export interface ContactState {
   error?: string;
@@ -20,6 +21,10 @@ export async function sendContactMessageAction(
 
   if (!name || !message) {
     return { error: "Veuillez renseigner votre nom et votre message." };
+  }
+
+  if (isLikelySpam(formData)) {
+    return { success: true };
   }
 
   await prisma.contactMessage.create({ data: { name, message } });

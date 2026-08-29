@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { createQuoteRequestAction, type QuoteRequestState } from "@/lib/actions/quotes";
+import { AntiSpamFields } from "@/components/site/AntiSpamFields";
 
 const initialState: QuoteRequestState = {};
 
@@ -18,6 +19,7 @@ export function QuoteRequestForm() {
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
+      <AntiSpamFields />
       <input
         name="clientName"
         required
