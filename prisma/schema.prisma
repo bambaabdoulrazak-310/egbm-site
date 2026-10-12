@@ -65,6 +65,31 @@ model PasswordResetToken {
   createdAt DateTime @default(now())
 }
 
+model Customer {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  phone        String
+  passwordHash String
+  address      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  orders      Order[]
+  resetTokens CustomerResetToken[]
+  reviews     Review[]
+}
+
+model CustomerResetToken {
+  id         String    @id @default(cuid())
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId String
+  token      String    @unique
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+}
+
 model Product {
   id          String          @id @default(cuid())
   name        String
@@ -79,6 +104,7 @@ model Product {
   media         ProductMedia[]
   orderItems    OrderItem[]
   documentLines DocumentLine[]
+  reviews       Review[]
 }
 
 model ProductMedia {
@@ -105,6 +131,8 @@ model Order {
   clientName    String
   clientPhone   String
   clientAddress String?
+  customer      Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerId    String?
   total         Int
   status        OrderStatus @default(NOUVELLE)
   createdAt     DateTime    @default(now())
@@ -185,4 +213,18 @@ model QuoteRequest {
   clientEmail String?
   message     String
   createdAt   DateTime @default(now())
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId String
+  rating     Int
+  comment    String?
+  published  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@unique([productId, customerId])
 }

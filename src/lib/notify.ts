@@ -82,3 +82,23 @@ export async function notifyNewContactMessage(contact: { name: string; message: 
     ])
   );
 }
+
+export async function notifyNewReview(review: {
+  productName: string;
+  customerName: string;
+  rating: number;
+  comment: string | null;
+}) {
+  const emails = await getNotifiableEmails();
+  if (emails.length === 0) return;
+  await sendEmail(
+    emails,
+    "Nouvel avis à valider — EGBM",
+    wrap("Nouvel avis client en attente de validation", [
+      ["Produit", review.productName],
+      ["Client", review.customerName],
+      ["Note", `${review.rating} / 5`],
+      ["Commentaire", review.comment ?? "—"],
+    ])
+  );
+}

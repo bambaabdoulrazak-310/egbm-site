@@ -49,6 +49,25 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
   );
 }
 
+export async function sendCustomerPasswordResetEmail(to: string, resetUrl: string) {
+  await sendEmail(
+    to,
+    "Réinitialisation de votre mot de passe — EGBM",
+    `
+      <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+        <h2 style="color: #E8681E;">Réinitialisation de mot de passe</h2>
+        <p>Vous avez demandé à réinitialiser le mot de passe de votre compte client EGBM.</p>
+        <p>
+          <a href="${resetUrl}" style="display: inline-block; background: #128A4C; color: white; padding: 12px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+            Choisir un nouveau mot de passe
+          </a>
+        </p>
+        <p style="color: #57544C; font-size: 13px;">Ce lien expire dans 1 heure. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.</p>
+      </div>
+    `
+  );
+}
+
 export async function sendNewAccountEmail(to: string, name: string, temporaryPassword: string) {
   await sendEmail(
     to,

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   ClipboardList,
   ExternalLink,
@@ -14,6 +15,7 @@ import {
   Newspaper,
   Package,
   ShieldCheck,
+  Star,
   Trophy,
   Users,
 } from "lucide-react";
@@ -26,9 +28,12 @@ const BASE_ITEMS: Array<[href: string, label: string, Icon: typeof LayoutDashboa
   ["/espace-entreprise/realisations", "Réalisations", Trophy],
   ["/espace-entreprise/commandes", "Commandes", ClipboardList],
   ["/espace-entreprise/demandes", "Demandes", Inbox],
+  ["/espace-entreprise/avis", "Avis", Star],
   ["/espace-entreprise/facturation", "Facturation", FileText],
   ["/espace-entreprise/mon-compte", "Mon compte", KeyRound],
 ];
+
+const NEW_ORDERS_POLL_MS = 20_000;
 
 interface Props {
   userName: string;
@@ -37,12 +42,37 @@ interface Props {
 
 export function EntrepriseNav({ userName, role }: Props) {
   const pathname = usePathname();
+  const [newOrders, setNewOrders] = useState(0);
   const items = [
     ...BASE_ITEMS,
     ...(role === "ADMINISTRATEUR"
       ? ([["/espace-entreprise/utilisateurs", "Utilisateurs", Users]] as const)
       : []),
   ];
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchCount() {
+      try {
+        const res = await fetch("/api/orders/new-count", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = (await res.json()) as { count: number };
+        if (!cancelled) setNewOrders(data.count);
+      } catch {
+        // silencieux : la pastille n'est pas critique
+      }
+    }
+
+    fetchCount();
+    const interval = setInterval(fetchCount, NEW_ORDERS_POLL_MS);
+    window.addEventListener("focus", fetchCount);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      window.removeEventListener("focus", fetchCount);
+    };
+  }, [pathname]);
 
   return (
     <>
@@ -76,6 +106,11 @@ export function EntrepriseNav({ userName, role }: Props) {
               }}
             >
               <Icon size={16} /> {label}
+              {href === "/espace-entreprise/commandes" && newOrders > 0 && (
+                <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-bold text-white">
+                  {newOrders}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
@@ -98,10 +133,15 @@ export function EntrepriseNav({ userName, role }: Props) {
           <Link
             key={href}
             href={href}
-            className="flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs text-white"
+            className="relative flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs text-white"
             style={{ background: pathname === href ? "#128A4C" : "transparent" }}
           >
             <Icon size={14} /> {label}
+            {href === "/espace-entreprise/commandes" && newOrders > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
+                {newOrders}
+              </span>
+            )}
           </Link>
         ))}
         <form action={logoutAction}>

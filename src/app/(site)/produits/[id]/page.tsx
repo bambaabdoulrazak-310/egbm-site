@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma";
 import { CATEGORY_LABELS, formatFCFA } from "@/lib/catalog";
 import { ProductGallery } from "@/components/site/ProductGallery";
 import { AddToCartButton } from "@/components/site/AddToCartButton";
+import { ProductReviews, type ReviewStatus } from "@/components/site/ProductReviews";
+import { getCustomerSession } from "@/lib/customer-session";
 
 export const revalidate = 0;
 
@@ -38,6 +40,42 @@ export default async function ProduitDetailPage({
     notFound();
   }
 
+  const customerSession = await getCustomerSession();
+
+  const [publishedReviews, aggregate, myReview, purchased] = await Promise.all([
+    prisma.review.findMany({
+      where: { productId: id, published: true },
+      orderBy: { createdAt: "desc" },
+      include: { customer: { select: { name: true } } },
+    }),
+    prisma.review.aggregate({
+      where: { productId: id, published: true },
+      _avg: { rating: true },
+      _count: true,
+    }),
+    customerSession
+      ? prisma.review.findUnique({
+          where: { productId_customerId: { productId: id, customerId: customerSession.sub } },
+        })
+      : null,
+    customerSession
+      ? prisma.orderItem.findFirst({
+          where: { productId: id, order: { customerId: customerSession.sub } },
+        })
+      : null,
+  ]);
+
+  let reviewStatus: ReviewStatus = "not_logged_in";
+  if (customerSession) {
+    if (myReview) {
+      reviewStatus = myReview.published ? "published" : "pending";
+    } else if (!purchased) {
+      reviewStatus = "not_eligible";
+    } else {
+      reviewStatus = "can_review";
+    }
+  }
+
   return (
     <div>
       <Link href="/produits" className="mb-6 flex items-center gap-1.5 text-sm text-ink-soft hover:text-ink">
@@ -62,6 +100,20 @@ export default async function ProduitDetailPage({
           <AddToCartButton productId={product.id} disabled={product.stock <= 0} />
         </div>
       </div>
+
+      <ProductReviews
+        productId={product.id}
+        reviews={publishedReviews.map((r) => ({
+          id: r.id,
+          rating: r.rating,
+          comment: r.comment,
+          createdAt: r.createdAt.toISOString(),
+          customerName: r.customer.name,
+        }))}
+        averageRating={aggregate._avg.rating}
+        count={aggregate._count}
+        status={reviewStatus}
+      />
     </div>
   );
 }

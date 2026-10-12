@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Menu, ShoppingCart, X } from "lucide-react";
+import { Menu, ShoppingCart, User, X } from "lucide-react";
 import { useCart } from "@/components/site/CartProvider";
 
 const NAV_ITEMS: Array<[href: string, label: string]> = [
@@ -58,6 +58,9 @@ export function Header() {
             className="hidden rounded-md bg-white px-4 py-2 font-display text-sm font-bold uppercase tracking-wide text-rust md:block"
           >
             Demander un devis
+          </Link>
+          <Link href="/compte" aria-label="Mon compte">
+            <User size={24} />
           </Link>
           <Link href="/commande" className="relative">
             <ShoppingCart size={24} />

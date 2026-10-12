@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Film, Plus } from "lucide-react";
+import { Film, Plus, Search } from "lucide-react";
 import { useCart } from "@/components/site/CartProvider";
 import {
   CATEGORY_ICON,
@@ -25,6 +25,14 @@ export interface ProduitListItem {
 
 const CATEGORIES = Object.keys(CATEGORY_LABELS) as ProductCategory[];
 
+type SortOption = "nom" | "prix-asc" | "prix-desc";
+
+const SORT_LABELS: Record<SortOption, string> = {
+  nom: "Nom (A→Z)",
+  "prix-asc": "Prix croissant",
+  "prix-desc": "Prix décroissant",
+};
+
 export function ProduitsClient({
   products,
   initialCategory,
@@ -37,16 +45,51 @@ export function ProduitsClient({
       ? (initialCategory as ProductCategory)
       : "TOUS"
   );
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<SortOption>("nom");
   const { addToCart } = useCart();
 
-  const filtered = useMemo(
-    () => (filter === "TOUS" ? products : products.filter((p) => p.category === filter)),
-    [products, filter]
-  );
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    let result = filter === "TOUS" ? products : products.filter((p) => p.category === filter);
+    if (q) {
+      result = result.filter((p) => p.name.toLowerCase().includes(q));
+    }
+    result = [...result].sort((a, b) => {
+      if (sort === "prix-asc") return a.price - b.price;
+      if (sort === "prix-desc") return b.price - a.price;
+      return a.name.localeCompare(b.name, "fr");
+    });
+    return result;
+  }, [products, filter, query, sort]);
 
   return (
     <div>
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative max-w-sm flex-1">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft" />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Rechercher un produit..."
+            className="w-full rounded-md border border-border-egbm bg-white py-2 pl-9 pr-3 text-sm"
+          />
+        </div>
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as SortOption)}
+          className="rounded-md border border-border-egbm bg-white px-3 py-2 text-sm font-medium"
+        >
+          {(Object.keys(SORT_LABELS) as SortOption[]).map((s) => (
+            <option key={s} value={s}>
+              {SORT_LABELS[s]}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
         <button
           onClick={() => setFilter("TOUS")}
           className={`rounded-full border border-border-egbm px-3 py-1.5 text-sm font-semibold ${
@@ -69,7 +112,9 @@ export function ProduitsClient({
       </div>
 
       {filtered.length === 0 ? (
-        <p className="mt-8 text-sm text-ink-soft">Aucun produit dans cette catégorie pour le moment.</p>
+        <p className="mt-8 text-sm text-ink-soft">
+          {query ? "Aucun produit ne correspond à votre recherche." : "Aucun produit dans cette catégorie pour le moment."}
+        </p>
       ) : (
         <div className="mt-6 grid gap-4 md:grid-cols-3">
           {filtered.map((p) => {

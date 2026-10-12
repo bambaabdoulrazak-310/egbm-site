@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
+import { getCustomerSession } from "@/lib/customer-session";
 import { notifyNewOrder } from "@/lib/notify";
 import { isLikelySpam } from "@/lib/antispam";
 
@@ -61,11 +62,14 @@ export async function createOrderAction(
 
   const total = items.reduce((sum, it) => sum + it.unitPrice * it.quantity, 0);
 
+  const customerSession = await getCustomerSession();
+
   await prisma.order.create({
     data: {
       clientName: nom,
       clientPhone: tel,
       clientAddress: adresse || null,
+      customerId: customerSession?.sub,
       total,
       status: "NOUVELLE",
       items: { create: items },

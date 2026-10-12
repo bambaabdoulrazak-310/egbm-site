@@ -13,9 +13,21 @@ export interface CommandeProduit {
   price: number;
 }
 
+export interface CommandeCustomer {
+  name: string;
+  phone: string;
+  address: string | null;
+}
+
 const initialState: OrderState = {};
 
-export function CommandeClient({ products }: { products: CommandeProduit[] }) {
+export function CommandeClient({
+  products,
+  customer,
+}: {
+  products: CommandeProduit[];
+  customer?: CommandeCustomer | null;
+}) {
   const { cart, setQty, clearCart } = useCart();
   const [state, formAction, pending] = useActionState(createOrderAction, initialState);
 
@@ -90,17 +102,20 @@ export function CommandeClient({ products }: { products: CommandeProduit[] }) {
             <input
               name="nom"
               required
+              defaultValue={customer?.name ?? ""}
               placeholder="Nom complet"
               className="rounded-md border border-border-egbm bg-white p-3"
             />
             <input
               name="tel"
               required
+              defaultValue={customer?.phone ?? ""}
               placeholder="Téléphone"
               className="rounded-md border border-border-egbm bg-white p-3"
             />
             <input
               name="adresse"
+              defaultValue={customer?.address ?? ""}
               placeholder="Adresse de livraison"
               className="rounded-md border border-border-egbm bg-white p-3"
             />
