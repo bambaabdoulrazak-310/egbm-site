@@ -5,13 +5,14 @@ import { put } from "@vercel/blob";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
+import { ProductCategory } from "@/generated/prisma/enums";
 
 export interface RealisationFormState {
   error?: string;
   success?: boolean;
 }
 
-const CATEGORIES = ["BTP", "AGRO_CHIMIQUE", "MATERIAUX_INDUSTRIELS"] as const;
+const CATEGORIES = Object.values(ProductCategory);
 const ALLOWED_PHOTO_TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",

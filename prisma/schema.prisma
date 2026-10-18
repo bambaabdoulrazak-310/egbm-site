@@ -18,6 +18,8 @@ enum ProductCategory {
   BTP
   AGRO_CHIMIQUE
   MATERIAUX_INDUSTRIELS
+  EQUIPEMENTS_MINIERS
+  AUTRES_SERVICES
 }
 
 enum PublicationType {

@@ -33,6 +33,14 @@ const FAMILIES = [
     title: "Matériaux industriels",
     text: "Fer, tôles, contreplaqué, fil de fer et autres matériaux pour vos ateliers, vos structures et vos aménagements.",
   },
+  {
+    title: "Équipements miniers",
+    text: "Matériels et équipements pour les sites miniers. Contactez-nous pour connaître les références disponibles.",
+  },
+  {
+    title: "Autres services & catalogue",
+    text: "Vous ne trouvez pas ce que vous cherchez ? Parcourez notre catalogue ou contactez-nous pour un besoin spécifique.",
+  },
 ];
 
 export default async function ProduitsPage({
@@ -111,7 +119,7 @@ export default async function ProduitsPage({
         />
 
         <section className="mt-14 border-t border-border-egbm pt-10">
-          <h2 className="font-display text-2xl font-bold">Nos trois familles de produits</h2>
+          <h2 className="font-display text-2xl font-bold">Nos familles de produits</h2>
           <div className="mt-5 grid gap-5 md:grid-cols-3">
             {FAMILIES.map((f) => (
               <div key={f.title}>

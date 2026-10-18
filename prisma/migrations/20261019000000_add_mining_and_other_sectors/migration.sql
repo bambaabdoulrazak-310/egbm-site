@@ -1,0 +1,3 @@
+-- AlterEnum
+ALTER TYPE "ProductCategory" ADD VALUE 'EQUIPEMENTS_MINIERS';
+ALTER TYPE "ProductCategory" ADD VALUE 'AUTRES_SERVICES';

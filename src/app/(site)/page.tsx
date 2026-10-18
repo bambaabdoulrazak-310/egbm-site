@@ -8,14 +8,18 @@ import {
   FileText,
   Handshake,
   HardHat,
+  LayoutGrid,
   Leaf,
   MapPin,
   Package,
+  Pickaxe,
   ShieldCheck,
   Truck,
   UserCheck,
   Users,
+  type LucideIcon,
 } from "lucide-react";
+import type { ProductCategory } from "@/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
 import { CATEGORY_ICON, CATEGORY_LABELS, CATEGORY_TEXT_COLOR } from "@/lib/catalog";
 import { COMPANY, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
@@ -44,7 +48,15 @@ const PROMISES = [
   { Icon: Users, title: "Conseil", desc: "Une équipe expérimentée à votre écoute." },
 ];
 
-const SECTORS = [
+// photo: null = visuel provisoire (dégradé + icône) en attendant une vraie photo.
+const SECTORS: Array<{
+  code: ProductCategory;
+  title: string;
+  Icon: LucideIcon;
+  photo: string | null;
+  alt: string;
+  desc: string;
+}> = [
   {
     code: "BTP",
     title: "BTP",
@@ -68,6 +80,22 @@ const SECTORS = [
     photo: "/materiaux-industriels-secteur.jpg",
     alt: "Barres de fer à béton empilées",
     desc: "Acier, fer, ciment et autres matériaux pour vos projets.",
+  },
+  {
+    code: "EQUIPEMENTS_MINIERS",
+    title: "Équipements miniers",
+    Icon: Pickaxe,
+    photo: null,
+    alt: "",
+    desc: "Matériels et équipements pour les sites miniers.",
+  },
+  {
+    code: "AUTRES_SERVICES",
+    title: "Autres services & catalogue",
+    Icon: LayoutGrid,
+    photo: null,
+    alt: "",
+    desc: "Vous ne trouvez pas ce que vous cherchez ? Parcourez notre catalogue ou contactez-nous pour un besoin spécifique.",
   },
 ];
 
@@ -101,7 +129,7 @@ export default async function AccueilPage() {
   ]);
 
   const stats: Array<[string, string]> = [
-    ["3", "secteurs d'activité"],
+    [String(SECTORS.length), "secteurs d'activité"],
     [String(productCount), productCount > 1 ? "produits référencés" : "produit référencé"],
     ["24/7", "assistance & conseil"],
   ];
@@ -204,20 +232,32 @@ export default async function AccueilPage() {
             Découvrir tous nos secteurs <ArrowRight size={15} />
           </Link>
         </div>
-        <div className="mt-8 grid gap-5 md:grid-cols-3">
-          {SECTORS.map(({ code, title, Icon, photo, alt, desc }) => (
+        <div className="mt-8 grid gap-5 md:grid-cols-6">
+          {SECTORS.map(({ code, title, Icon, photo, alt, desc }, i) => (
             <article
               key={code}
-              className="overflow-hidden rounded-lg border border-border-egbm bg-white shadow-sm"
+              className={`overflow-hidden rounded-lg border border-border-egbm bg-white shadow-sm ${
+                i < 3 ? "md:col-span-2" : "md:col-span-3"
+              }`}
             >
               <div className="relative h-48">
-                <Image
-                  src={photo}
-                  alt={alt}
-                  fill
-                  sizes="(min-width: 768px) 33vw, 100vw"
-                  className="object-cover"
-                />
+                {photo ? (
+                  <Image
+                    src={photo}
+                    alt={alt}
+                    fill
+                    sizes="(min-width: 768px) 33vw, 100vw"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div
+                    role="img"
+                    aria-label={title}
+                    className="flex h-full w-full items-center justify-center bg-gradient-to-br from-night to-cement"
+                  >
+                    <Icon className="text-white/70" size={64} strokeWidth={1.2} />
+                  </div>
+                )}
               </div>
               <div className="p-5">
                 <div className="flex items-center gap-3">

@@ -551,8 +551,18 @@ export function ProduitsClient({
             <p className="text-sm text-ink-soft">
               {query
                 ? "Aucun produit ne correspond à votre recherche."
-                : "Aucun produit ne correspond à vos filtres."}
+                : category !== "TOUS" && categoryCounts[category] === 0
+                  ? "Pas encore de produits en ligne dans ce secteur. Contactez-nous ou demandez un devis, nous vous répondons rapidement."
+                  : "Aucun produit ne correspond à vos filtres."}
             </p>
+            {!query && category !== "TOUS" && categoryCounts[category] === 0 && (
+              <Link
+                href="/devis"
+                className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-rust px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-rust-dark"
+              >
+                Demander un devis <ArrowRight size={14} />
+              </Link>
+            )}
             {filtersActive && (
               <button
                 type="button"
