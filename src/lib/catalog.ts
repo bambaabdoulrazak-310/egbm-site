@@ -1,4 +1,4 @@
-import { HardHat, LayoutGrid, Leaf, Package, Pickaxe } from "lucide-react";
+import { BookOpen, HardHat, Leaf, Package, Pickaxe, Wrench } from "lucide-react";
 import type { ProductCategory } from "@/generated/prisma/enums";
 
 export interface MediaItem {
@@ -11,7 +11,8 @@ export const CATEGORY_LABELS: Record<ProductCategory, string> = {
   AGRO_CHIMIQUE: "Agro-chimique",
   MATERIAUX_INDUSTRIELS: "Matériaux industriels",
   EQUIPEMENTS_MINIERS: "Équipements miniers",
-  AUTRES_SERVICES: "Catalogues et autres services",
+  CATALOGUES: "Catalogues",
+  AUTRES_SERVICES: "Autres services",
 };
 
 export const CATEGORY_ICON = {
@@ -19,7 +20,8 @@ export const CATEGORY_ICON = {
   AGRO_CHIMIQUE: Leaf,
   MATERIAUX_INDUSTRIELS: Package,
   EQUIPEMENTS_MINIERS: Pickaxe,
-  AUTRES_SERVICES: LayoutGrid,
+  CATALOGUES: BookOpen,
+  AUTRES_SERVICES: Wrench,
 } as const;
 
 export const CATEGORY_TEXT_COLOR: Record<ProductCategory, string> = {
@@ -27,6 +29,7 @@ export const CATEGORY_TEXT_COLOR: Record<ProductCategory, string> = {
   AGRO_CHIMIQUE: "text-green",
   MATERIAUX_INDUSTRIELS: "text-cement",
   EQUIPEMENTS_MINIERS: "text-rust-dark",
+  CATALOGUES: "text-ink",
   AUTRES_SERVICES: "text-ink-soft",
 };
 

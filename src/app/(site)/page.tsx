@@ -7,8 +7,8 @@ import {
   Clock,
   FileText,
   Handshake,
+  BookOpen,
   HardHat,
-  LayoutGrid,
   Leaf,
   MapPin,
   Package,
@@ -17,6 +17,7 @@ import {
   Truck,
   UserCheck,
   Users,
+  Wrench,
   type LucideIcon,
 } from "lucide-react";
 import type { ProductCategory } from "@/generated/prisma/enums";
@@ -90,12 +91,20 @@ const SECTORS: Array<{
     desc: "Matériels et équipements pour les sites miniers.",
   },
   {
-    code: "AUTRES_SERVICES",
-    title: "Catalogues et autres services",
-    Icon: LayoutGrid,
+    code: "CATALOGUES",
+    title: "Catalogues",
+    Icon: BookOpen,
     photo: null,
     alt: "",
-    desc: "Vous ne trouvez pas ce que vous cherchez ? Parcourez notre catalogue ou contactez-nous pour un besoin spécifique.",
+    desc: "Parcourez l'ensemble de nos produits et demandez un devis pour la référence qu'il vous faut.",
+  },
+  {
+    code: "AUTRES_SERVICES",
+    title: "Autres services",
+    Icon: Wrench,
+    photo: null,
+    alt: "",
+    desc: "Un besoin spécifique ? Contactez-nous, nous étudions votre demande.",
   },
 ];
 
@@ -247,7 +256,7 @@ export default async function AccueilPage() {
               return (
                 <article
                   key={code}
-                  className="flex items-start gap-4 rounded-lg border border-border-egbm bg-white p-5 shadow-sm md:col-span-3"
+                  className="flex items-start gap-4 rounded-lg border border-border-egbm bg-white p-5 shadow-sm md:col-span-2"
                 >
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-rust/10">
                     <Icon className="text-rust" size={26} strokeWidth={1.6} />

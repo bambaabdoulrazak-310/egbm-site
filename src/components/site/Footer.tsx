@@ -28,7 +28,8 @@ const ACTIVITY_LINKS: Array<[string, string]> = [
   ["/produits?categorie=AGRO_CHIMIQUE", "Agro-chimie"],
   ["/produits?categorie=MATERIAUX_INDUSTRIELS", "Matériaux industriels"],
   ["/produits?categorie=EQUIPEMENTS_MINIERS", "Équipements miniers"],
-  ["/produits?categorie=AUTRES_SERVICES", "Catalogues et autres services"],
+  ["/produits?categorie=CATALOGUES", "Catalogues"],
+  ["/produits?categorie=AUTRES_SERVICES", "Autres services"],
 ];
 
 export function Footer() {

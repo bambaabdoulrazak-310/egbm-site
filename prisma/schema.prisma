@@ -20,6 +20,7 @@ enum ProductCategory {
   MATERIAUX_INDUSTRIELS
   EQUIPEMENTS_MINIERS
   AUTRES_SERVICES
+  CATALOGUES
 }
 
 enum PublicationType {
