@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { SectorIcon } from "@/components/site/SectorIcon";
 
 export interface CarouselSector {
@@ -26,6 +26,7 @@ export function SectorsCarousel({ sectors }: { sectors: CarouselSector[] }) {
   const [pages, setPages] = useState(1);
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [userPaused, setUserPaused] = useState(false);
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const drag = useRef({ down: false, moved: false, startX: 0, startLeft: 0 });
   const [dragging, setDragging] = useState(false);
@@ -90,15 +91,14 @@ export function SectorsCarousel({ sectors }: { sectors: CarouselSector[] }) {
     scrollToIndex(index <= 0 ? pages - 1 : index - 1);
   }, [pages, scrollToIndex, step]);
 
-  // Défilement automatique (pas s'il n'y a rien à faire défiler, ni en pause, ni si le
-  // visiteur a demandé de réduire les animations).
+  // Défilement automatique : il tourne dès qu'il y a plus de cartes que de place, sauf pendant
+  // une interaction (toucher, glissé, clavier) ou si le visiteur a mis le carrousel en pause.
+  // Avec « réduire les animations », le changement de carte se fait sans animation.
   useEffect(() => {
-    if (pages <= 1 || paused) return;
-    const id = setInterval(() => {
-      if (!reducedMotion()) next();
-    }, AUTO_SCROLL_MS);
+    if (pages <= 1 || paused || userPaused) return;
+    const id = setInterval(next, AUTO_SCROLL_MS);
     return () => clearInterval(id);
-  }, [pages, paused, next]);
+  }, [pages, paused, userPaused, next]);
 
   useEffect(
     () => () => {
@@ -145,9 +145,11 @@ export function SectorsCarousel({ sectors }: { sectors: CarouselSector[] }) {
       role="region"
       aria-roledescription="carrousel"
       aria-label="Nos secteurs d'activité"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocus={() => setPaused(true)}
+      onFocus={(e) => {
+        // Pause seulement pour la navigation au clavier (un clic sur une flèche ne doit pas
+        // bloquer le défilement indéfiniment).
+        if (e.target.matches(":focus-visible")) setPaused(true);
+      }}
       onBlur={() => setPaused(false)}
       onTouchStart={() => setPaused(true)}
       onTouchEnd={() => pauseFor(6000)}
@@ -237,6 +239,14 @@ export function SectorsCarousel({ sectors }: { sectors: CarouselSector[] }) {
             ))}
           </div>
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setUserPaused((p) => !p)}
+              aria-label={userPaused ? "Reprendre le défilement automatique" : "Mettre le défilement en pause"}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-border-egbm bg-white text-ink transition-colors hover:border-rust hover:text-rust"
+            >
+              {userPaused ? <Play size={15} /> : <Pause size={15} />}
+            </button>
             <button
               type="button"
               onClick={() => {
