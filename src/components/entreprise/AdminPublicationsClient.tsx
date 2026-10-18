@@ -35,7 +35,7 @@ export function AdminPublicationsClient({ publications }: { publications: AdminP
       <form
         ref={formRef}
         action={formAction}
-        className="mt-4 grid gap-3 rounded-lg border border-border-egbm bg-cream p-4 md:grid-cols-4"
+        className="mt-4 grid gap-3 rounded-lg border border-border-egbm bg-white shadow-sm p-4 md:grid-cols-4"
       >
         <select name="type" defaultValue="PUBLICATION" className="rounded-md border border-border-egbm p-2">
           <option value="PUBLICATION">Publication</option>
@@ -70,7 +70,7 @@ export function AdminPublicationsClient({ publications }: { publications: AdminP
         {publications.map((u) => (
           <div
             key={u.id}
-            className="flex items-start justify-between rounded-lg border border-border-egbm bg-cream p-4"
+            className="flex items-start justify-between rounded-lg border border-border-egbm bg-white shadow-sm p-4"
           >
             <div>
               <div

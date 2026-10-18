@@ -29,7 +29,7 @@ function Stars({ rating }: { rating: number }) {
 
 function ReviewCard({ review }: { review: AdminReview }) {
   return (
-    <div className="flex items-start justify-between gap-3 rounded-lg border border-border-egbm bg-cream p-4">
+    <div className="flex items-start justify-between gap-3 rounded-lg border border-border-egbm bg-white shadow-sm p-4">
       <div>
         <div className="font-semibold">{review.product.name}</div>
         <div className="text-xs text-ink-soft">
@@ -54,7 +54,7 @@ function ReviewCard({ review }: { review: AdminReview }) {
         ) : (
           <form action={publishReviewAction}>
             <input type="hidden" name="id" value={review.id} />
-            <button type="submit" className="rounded-md bg-green px-3 py-1.5 text-xs font-semibold text-white">
+            <button type="submit" className="rounded-md bg-rust hover:bg-rust-dark px-3 py-1.5 text-xs font-semibold text-white">
               Publier
             </button>
           </form>

@@ -17,6 +17,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { getActiveSectors } from "@/lib/sectors";
 import { SectorIcon } from "@/components/site/SectorIcon";
+import { SectorsCarousel } from "@/components/site/SectorsCarousel";
 import { COMPANY, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import { JsonLd } from "@/components/site/JsonLd";
 
@@ -42,23 +43,6 @@ const PROMISES = [
   },
   { Icon: Users, title: "Conseil", desc: "Une équipe expérimentée à votre écoute." },
 ];
-
-const COMPACT_WRAPPER_CLASS: Record<number, string> = {
-  2: "md:col-span-2",
-  4: "md:col-span-4",
-  6: "md:col-span-6",
-};
-
-function SectorLink({ slug }: { slug: string }) {
-  return (
-    <Link
-      href={`/produits?categorie=${slug}`}
-      className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-rust hover:underline"
-    >
-      En savoir plus <ArrowRight size={14} />
-    </Link>
-  );
-}
 
 const REASONS = [
   {
@@ -93,12 +77,6 @@ export default async function AccueilPage() {
     prisma.product.count(),
     getActiveSectors(),
   ]);
-
-  // Secteur avec photo : grande carte (2 colonnes sur 6). Sans photo : carte compacte, les
-  // cartes compactes se partagent la place restante de la dernière ligne.
-  const photoSectors = sectors.filter((s) => s.photoUrl);
-  const compactSectors = sectors.filter((s) => !s.photoUrl);
-  const compactCols = 6 - (photoSectors.length % 3) * 2 || 6;
 
   const stats: Array<[string, string]> = [
     [String(sectors.length), sectors.length > 1 ? "secteurs d'activité" : "secteur d'activité"],
@@ -204,69 +182,8 @@ export default async function AccueilPage() {
             Découvrir tous nos secteurs <ArrowRight size={15} />
           </Link>
         </div>
-        <div className="mt-8 grid gap-5 md:grid-cols-6">
-          {photoSectors.map((sector) => {
-            return (
-              <article
-                key={sector.id}
-                className="overflow-hidden rounded-lg border border-border-egbm bg-white shadow-sm md:col-span-2"
-              >
-                <div className="relative h-48">
-                  <Image
-                    src={sector.photoUrl!}
-                    alt={sector.name}
-                    fill
-                    sizes="(min-width: 768px) 33vw, 100vw"
-                    className="object-cover"
-                  />
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center gap-3">
-                    <SectorIcon name={sector.icon} className="text-rust" size={26} strokeWidth={1.6} />
-                    <h3 className="font-display text-xl font-bold text-ink">{sector.name}</h3>
-                  </div>
-                  {sector.description && (
-                    <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-                      {sector.description}
-                    </p>
-                  )}
-                  <SectorLink slug={sector.slug} />
-                </div>
-              </article>
-            );
-          })}
-
-          {/* Secteurs sans photo : cartes compactes (icône + texte), qui remplissent la
-              place restante de la dernière ligne, empilées à côté de la dernière photo. */}
-          {compactSectors.length > 0 && (
-            <div
-              className={`flex flex-col gap-5 ${COMPACT_WRAPPER_CLASS[compactCols]} ${
-                compactCols === 6 ? "md:flex-row" : ""
-              }`}
-            >
-              {compactSectors.map((sector) => {
-                return (
-                  <article
-                    key={sector.id}
-                    className="flex items-start gap-4 rounded-lg border border-border-egbm bg-white p-5 shadow-sm md:flex-1"
-                  >
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-rust/10">
-                      <SectorIcon name={sector.icon} className="text-rust" size={26} strokeWidth={1.6} />
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="font-display text-xl font-bold text-ink">{sector.name}</h3>
-                      {sector.description && (
-                        <p className="mt-1 text-sm leading-relaxed text-ink-soft">
-                          {sector.description}
-                        </p>
-                      )}
-                      <SectorLink slug={sector.slug} />
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          )}
+        <div className="mt-8">
+          <SectorsCarousel sectors={sectors} />
         </div>
       </section>
 

@@ -57,7 +57,7 @@ export function AdminProduitsClient({
         <h1 className="font-display text-2xl font-extrabold md:text-4xl">Produits</h1>
         <button
           onClick={() => (showForm ? setShowForm(false) : startCreate())}
-          className="flex items-center gap-1.5 rounded-md bg-green px-4 py-2 font-semibold text-white"
+          className="flex items-center gap-1.5 rounded-md bg-rust hover:bg-rust-dark px-4 py-2 font-semibold text-white"
         >
           <Plus size={16} /> Nouveau produit
         </button>
@@ -67,7 +67,7 @@ export function AdminProduitsClient({
         <form
           key={editing?.id ?? "new"}
           action={formAction}
-          className="mt-4 grid gap-3 rounded-lg border border-border-egbm bg-cream p-4 md:grid-cols-5"
+          className="mt-4 grid gap-3 rounded-lg border border-border-egbm bg-white shadow-sm p-4 md:grid-cols-5"
         >
           <input type="hidden" name="id" value={editing?.id ?? ""} />
           <input
@@ -132,7 +132,7 @@ export function AdminProduitsClient({
 
       <div className="mt-5 overflow-x-auto rounded-lg border border-border-egbm">
         <table className="w-full min-w-[620px] text-sm">
-          <thead className="bg-ink text-white">
+          <thead className="bg-night text-white">
             <tr>
               <th className="p-3"></th>
               <th className="p-3 text-left">Produit</th>
@@ -147,7 +147,7 @@ export function AdminProduitsClient({
             {products.map((p) => {
               const cover = p.media[0];
               return (
-                <tr key={p.id} className="border-t border-border-egbm bg-cream">
+                <tr key={p.id} className="border-t border-border-egbm bg-white shadow-sm">
                   <td className="p-3">
                     {cover ? (
                       cover.type === "IMAGE" ? (
@@ -159,12 +159,12 @@ export function AdminProduitsClient({
                           className="rounded-md object-cover"
                         />
                       ) : (
-                        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-bg-alt">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-surface">
                           <Film size={16} className="text-ink-soft" />
                         </div>
                       )
                     ) : (
-                      <div className="h-9 w-9 rounded-md bg-bg-alt" />
+                      <div className="h-9 w-9 rounded-md bg-surface" />
                     )}
                   </td>
                   <td className="p-3 font-medium">{p.name}</td>

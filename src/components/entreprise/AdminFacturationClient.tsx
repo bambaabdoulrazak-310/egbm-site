@@ -119,7 +119,7 @@ export function AdminFacturationClient({
       <h1 className="font-display text-2xl font-extrabold md:text-4xl print:hidden">Facturation</h1>
 
       <div className="mt-5 grid gap-6 md:grid-cols-2">
-        <form action={formAction} className="rounded-lg border border-border-egbm bg-cream p-4 print:hidden">
+        <form action={formAction} className="rounded-lg border border-border-egbm bg-white shadow-sm p-4 print:hidden">
           <input type="hidden" name="lines" value={linesPayload} />
           <input type="hidden" name="type" value={type} />
           <div className="mb-3 flex gap-2">
@@ -129,7 +129,7 @@ export function AdminFacturationClient({
                 type="button"
                 onClick={() => changeType(value)}
                 className={`rounded-full px-3 py-1.5 text-sm font-semibold ${
-                  type === value ? "bg-green text-white" : "bg-bg-alt text-ink"
+                  type === value ? "bg-rust text-white" : "bg-surface text-ink"
                 }`}
               >
                 {label}
@@ -419,7 +419,7 @@ export function AdminFacturationClient({
             {documents.map((f) => (
               <div
                 key={f.number}
-                className="flex justify-between rounded-md border border-border-egbm bg-cream p-3 text-sm"
+                className="flex justify-between rounded-md border border-border-egbm bg-white shadow-sm p-3 text-sm"
               >
                 <span className="font-mono">
                   {f.number} — {TYPES.find(([v]) => v === f.type)?.[1]}

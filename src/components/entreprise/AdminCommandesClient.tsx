@@ -38,7 +38,7 @@ export function AdminCommandesClient({ orders }: { orders: AdminOrder[] }) {
       <div className="mt-5 flex flex-col gap-3">
         {orders.length === 0 && <p className="text-ink-soft">Aucune commande pour le moment.</p>}
         {orders.map((c) => (
-          <div key={c.id} className="rounded-lg border border-border-egbm bg-cream p-4">
+          <div key={c.id} className="rounded-lg border border-border-egbm bg-white shadow-sm p-4">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
                 <div className="font-semibold">{c.clientName}</div>

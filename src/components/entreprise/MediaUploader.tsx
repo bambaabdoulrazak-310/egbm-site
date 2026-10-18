@@ -83,7 +83,7 @@ export function MediaUploader({ initialMedia = [] }: { initialMedia?: MediaItem[
         {pending.map((p) => (
           <div
             key={p.key}
-            className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-md border border-border-egbm bg-bg-alt"
+            className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-md border border-border-egbm bg-surface"
           >
             {p.uploading ? (
               <Loader2 size={20} className="animate-spin text-ink-soft" />

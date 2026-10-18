@@ -11,7 +11,7 @@ export default async function EspaceEntrepriseLayout({
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
       <EntrepriseNav userName={session.name} role={session.role} />
-      <main className="flex-1 overflow-x-hidden bg-bg-alt p-4 sm:p-6">{children}</main>
+      <main className="flex-1 overflow-x-hidden bg-bg p-4 sm:p-6">{children}</main>
     </div>
   );
 }

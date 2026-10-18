@@ -41,7 +41,7 @@ export function AdminUtilisateursClient({
       <form
         ref={formRef}
         action={formAction}
-        className="mt-4 grid gap-3 rounded-lg border border-border-egbm bg-cream p-4 md:grid-cols-3"
+        className="mt-4 grid gap-3 rounded-lg border border-border-egbm bg-white shadow-sm p-4 md:grid-cols-3"
       >
         <input name="nom" required placeholder="Nom complet" className="rounded-md border border-border-egbm p-2" />
         <input
@@ -54,7 +54,7 @@ export function AdminUtilisateursClient({
         <button
           type="submit"
           disabled={pending}
-          className="flex items-center justify-center gap-1.5 rounded-md bg-green px-4 py-2 font-semibold text-white disabled:opacity-60"
+          className="flex items-center justify-center gap-1.5 rounded-md bg-rust hover:bg-rust-dark px-4 py-2 font-semibold text-white disabled:opacity-60"
         >
           <UserPlus size={16} /> Autoriser
         </button>
@@ -81,7 +81,7 @@ export function AdminUtilisateursClient({
         {users.map((u) => (
           <div
             key={u.id}
-            className="flex items-center justify-between rounded-lg border border-border-egbm bg-cream p-3"
+            className="flex items-center justify-between rounded-lg border border-border-egbm bg-white shadow-sm p-3"
           >
             <div>
               <div className="font-semibold">{u.name}</div>

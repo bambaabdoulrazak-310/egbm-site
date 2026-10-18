@@ -40,7 +40,7 @@ function SectorRow({
   const [deleteState, deleteAction, deleting] = useActionState(deleteSectorAction, initialState);
 
   return (
-    <div className="rounded-lg border border-border-egbm bg-cream p-4">
+    <div className="rounded-lg border border-border-egbm bg-white shadow-sm p-4">
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex flex-col">
           <form action={moveSectorAction}>
@@ -69,7 +69,7 @@ function SectorRow({
           </form>
         </div>
 
-        <div className="relative flex h-14 w-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-bg-alt">
+        <div className="relative flex h-14 w-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-surface">
           {sector.photoUrl ? (
             <Image src={sector.photoUrl} alt="" fill sizes="80px" className="object-cover" />
           ) : (
@@ -81,7 +81,7 @@ function SectorRow({
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-semibold">{sector.name}</span>
             {!sector.active && (
-              <span className="rounded bg-bg-alt px-2 py-0.5 text-[11px] font-semibold text-ink-soft">
+              <span className="rounded bg-surface px-2 py-0.5 text-[11px] font-semibold text-ink-soft">
                 Masqué
               </span>
             )}
@@ -160,7 +160,7 @@ export function AdminSecteursClient({ sectors }: { sectors: AdminSector[] }) {
               setShowForm(true);
             }
           }}
-          className="flex items-center gap-1.5 rounded-md bg-green px-4 py-2 font-semibold text-white"
+          className="flex items-center gap-1.5 rounded-md bg-rust hover:bg-rust-dark px-4 py-2 font-semibold text-white"
         >
           <Plus size={16} /> Nouveau secteur
         </button>
@@ -175,7 +175,7 @@ export function AdminSecteursClient({ sectors }: { sectors: AdminSector[] }) {
         <form
           key={editing?.id ?? "new"}
           action={formAction}
-          className="mt-4 grid gap-3 rounded-lg border border-border-egbm bg-cream p-4 md:grid-cols-3"
+          className="mt-4 grid gap-3 rounded-lg border border-border-egbm bg-white shadow-sm p-4 md:grid-cols-3"
         >
           <input type="hidden" name="id" value={editing?.id ?? ""} />
           <input

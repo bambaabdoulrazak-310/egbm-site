@@ -12,8 +12,8 @@ export default async function ReinitialiserMotDePassePage({
   const { token } = await searchParams;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg-alt px-5">
-      <div className="w-full max-w-sm rounded-lg border border-border-egbm bg-cream p-6">
+    <div className="flex min-h-screen items-center justify-center bg-bg px-5">
+      <div className="w-full max-w-sm rounded-lg border border-border-egbm bg-white shadow-sm p-6">
         <div className="mb-4 flex flex-col items-center">
           <Image
             src="/logo.jpg"

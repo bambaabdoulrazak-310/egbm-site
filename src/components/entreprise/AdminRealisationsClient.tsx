@@ -52,7 +52,7 @@ export function AdminRealisationsClient({
               setShowForm(true);
             }
           }}
-          className="flex items-center gap-1.5 rounded-md bg-green px-4 py-2 font-semibold text-white"
+          className="flex items-center gap-1.5 rounded-md bg-rust hover:bg-rust-dark px-4 py-2 font-semibold text-white"
         >
           <Plus size={16} /> Nouvelle réalisation
         </button>
@@ -62,7 +62,7 @@ export function AdminRealisationsClient({
         <form
           key={editing?.id ?? "new"}
           action={formAction}
-          className="mt-4 grid gap-3 rounded-lg border border-border-egbm bg-cream p-4 md:grid-cols-4"
+          className="mt-4 grid gap-3 rounded-lg border border-border-egbm bg-white shadow-sm p-4 md:grid-cols-4"
         >
           <input type="hidden" name="id" value={editing?.id ?? ""} />
           <input
@@ -132,7 +132,7 @@ export function AdminRealisationsClient({
 
       <div className="mt-5 grid gap-3 md:grid-cols-2">
         {realisations.map((r) => (
-          <div key={r.id} className="flex gap-3 rounded-lg border border-border-egbm bg-cream p-3">
+          <div key={r.id} className="flex gap-3 rounded-lg border border-border-egbm bg-white shadow-sm p-3">
             {r.photoUrl ? (
               <Image
                 src={r.photoUrl}
@@ -142,7 +142,7 @@ export function AdminRealisationsClient({
                 className="h-16 w-16 shrink-0 rounded-md object-cover"
               />
             ) : (
-              <div className="h-16 w-16 shrink-0 rounded-md bg-bg-alt" />
+              <div className="h-16 w-16 shrink-0 rounded-md bg-surface" />
             )}
             <div className="min-w-0 flex-1">
               <div className="font-semibold">{r.title}</div>

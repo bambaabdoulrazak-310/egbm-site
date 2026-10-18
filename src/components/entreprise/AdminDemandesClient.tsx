@@ -40,7 +40,7 @@ export function AdminDemandesClient({
             {quotes.map((q) => (
               <div
                 key={q.id}
-                className="flex items-start justify-between gap-3 rounded-lg border border-border-egbm bg-cream p-4"
+                className="flex items-start justify-between gap-3 rounded-lg border border-border-egbm bg-white shadow-sm p-4"
               >
                 <div>
                   <div className="font-semibold">{q.clientName}</div>
@@ -72,7 +72,7 @@ export function AdminDemandesClient({
             {messages.map((m) => (
               <div
                 key={m.id}
-                className="flex items-start justify-between gap-3 rounded-lg border border-border-egbm bg-cream p-4"
+                className="flex items-start justify-between gap-3 rounded-lg border border-border-egbm bg-white shadow-sm p-4"
               >
                 <div>
                   <div className="font-semibold">{m.name}</div>

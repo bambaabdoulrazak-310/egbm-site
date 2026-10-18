@@ -41,7 +41,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         </p>
         <Link
           href="/connexion"
-          className="flex items-center justify-center gap-2 rounded-md bg-green py-3 font-semibold text-white"
+          className="flex items-center justify-center gap-2 rounded-md bg-rust hover:bg-rust-dark py-3 font-semibold text-white"
         >
           Se connecter
         </Link>
@@ -62,7 +62,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="mt-1 flex items-center justify-center gap-2 rounded-md bg-green py-3 font-semibold text-white transition-opacity disabled:opacity-60"
+        className="mt-1 flex items-center justify-center gap-2 rounded-md bg-rust hover:bg-rust-dark py-3 font-semibold text-white transition-opacity disabled:opacity-60"
       >
         {pending ? "Mise à jour..." : "Réinitialiser le mot de passe"}
       </button>

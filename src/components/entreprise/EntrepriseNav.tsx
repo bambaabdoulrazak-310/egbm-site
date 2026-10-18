@@ -27,7 +27,6 @@ const BASE_ITEMS: Array<[href: string, label: string, Icon: typeof LayoutDashboa
   ["/espace-entreprise/produits", "Produits", Package],
   ["/espace-entreprise/publications", "Publications", Newspaper],
   ["/espace-entreprise/realisations", "Réalisations", Trophy],
-  ["/espace-entreprise/secteurs", "Secteurs", Layers],
   ["/espace-entreprise/commandes", "Commandes", ClipboardList],
   ["/espace-entreprise/demandes", "Demandes", Inbox],
   ["/espace-entreprise/avis", "Avis", Star],
@@ -47,8 +46,12 @@ export function EntrepriseNav({ userName, role }: Props) {
   const [newOrders, setNewOrders] = useState(0);
   const items = [
     ...BASE_ITEMS,
+    // Réservé à l'administrateur principal : gestion des secteurs et des comptes.
     ...(role === "ADMINISTRATEUR"
-      ? ([["/espace-entreprise/utilisateurs", "Utilisateurs", Users]] as const)
+      ? ([
+          ["/espace-entreprise/secteurs", "Secteurs", Layers],
+          ["/espace-entreprise/utilisateurs", "Utilisateurs", Users],
+        ] as const)
       : []),
   ];
 
@@ -78,7 +81,7 @@ export function EntrepriseNav({ userName, role }: Props) {
 
   return (
     <>
-      <aside className="hidden w-56 shrink-0 flex-col bg-ink p-4 text-bg-alt md:flex print:hidden">
+      <aside className="hidden w-56 shrink-0 flex-col bg-night p-4 text-white/80 md:flex print:hidden">
         <div className="mb-2 flex items-center gap-2 font-display text-2xl font-extrabold text-white">
           <Image src="/logo.jpg" alt="Logo EGBM" width={32} height={32} className="rounded-full object-cover" />
           EGBM
@@ -86,11 +89,11 @@ export function EntrepriseNav({ userName, role }: Props) {
         <Link
           href="/"
           target="_blank"
-          className="mb-4 flex items-center gap-1.5 text-xs text-bg-alt hover:text-white"
+          className="mb-4 flex items-center gap-1.5 text-xs text-white/80 hover:text-white"
         >
           <ExternalLink size={13} /> Voir le site client
         </Link>
-        <div className="mb-4 rounded-md bg-black/20 p-2 text-xs">
+        <div className="mb-4 rounded-md bg-white/10 p-2 text-xs">
           <div className="font-semibold text-white">{userName}</div>
           <div className="mt-0.5 flex items-center gap-1">
             <ShieldCheck size={12} /> {role === "ADMINISTRATEUR" ? "Administrateur" : "Gestionnaire"}
@@ -103,7 +106,7 @@ export function EntrepriseNav({ userName, role }: Props) {
               href={href}
               className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium"
               style={{
-                background: pathname === href ? "#128A4C" : "transparent",
+                background: pathname === href ? "#E8681E" : "transparent",
                 color: pathname === href ? "white" : undefined,
               }}
             >
@@ -123,11 +126,11 @@ export function EntrepriseNav({ userName, role }: Props) {
         </form>
       </aside>
 
-      <div className="flex items-center gap-1 overflow-x-auto bg-ink p-2 md:hidden print:hidden">
+      <div className="flex items-center gap-1 overflow-x-auto bg-night p-2 md:hidden print:hidden">
         <Link
           href="/"
           target="_blank"
-          className="flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs text-bg-alt"
+          className="flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs text-white/80"
         >
           <ExternalLink size={14} /> Site
         </Link>
@@ -136,7 +139,7 @@ export function EntrepriseNav({ userName, role }: Props) {
             key={href}
             href={href}
             className="relative flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs text-white"
-            style={{ background: pathname === href ? "#128A4C" : "transparent" }}
+            style={{ background: pathname === href ? "#E8681E" : "transparent" }}
           >
             <Icon size={14} /> {label}
             {href === "/espace-entreprise/commandes" && newOrders > 0 && (
@@ -147,7 +150,7 @@ export function EntrepriseNav({ userName, role }: Props) {
           </Link>
         ))}
         <form action={logoutAction}>
-          <button className="flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs text-bg-alt">
+          <button className="flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs text-white/80">
             <LogOut size={14} /> Quitter
           </button>
         </form>

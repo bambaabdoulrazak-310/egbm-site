@@ -19,7 +19,7 @@ export function ChangeEmailForm({ currentEmail }: { currentEmail: string }) {
     <form
       ref={formRef}
       action={formAction}
-      className="mt-4 flex max-w-sm flex-col gap-3 rounded-lg border border-border-egbm bg-cream p-4"
+      className="mt-4 flex max-w-sm flex-col gap-3 rounded-lg border border-border-egbm bg-white shadow-sm p-4"
     >
       <p className="text-sm text-ink-soft">
         Email actuel : <span className="font-semibold text-ink">{currentEmail}</span>
@@ -58,7 +58,7 @@ export function ChangeEmailForm({ currentEmail }: { currentEmail: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="flex items-center justify-center gap-1.5 rounded-md bg-green px-4 py-2 font-semibold text-white disabled:opacity-60"
+        className="flex items-center justify-center gap-1.5 rounded-md bg-rust hover:bg-rust-dark px-4 py-2 font-semibold text-white disabled:opacity-60"
       >
         <Mail size={16} /> {pending ? "Mise à jour..." : "Changer l'email"}
       </button>

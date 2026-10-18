@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 import { put } from "@vercel/blob";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireSession } from "@/lib/auth-guard";
+import { requireAdmin } from "@/lib/auth-guard";
 import { slugify } from "@/lib/sectors";
 import { SECTOR_ICON_KEYS } from "@/lib/sector-icons";
 
@@ -18,6 +18,8 @@ const ALLOWED_PHOTO_TYPES: Record<string, string> = {
   "image/png": "png",
   "image/webp": "webp",
 };
+
+// Seul l'administrateur principal peut modifier les secteurs (requireAdmin dans chaque action).
 
 // Les secteurs apparaissent partout (accueil, pied de page, filtres, formulaires) :
 // on invalide tout le site d'un coup.
@@ -38,7 +40,7 @@ export async function saveSectorAction(
   _prevState: SectorFormState,
   formData: FormData
 ): Promise<SectorFormState> {
-  await requireSession();
+  await requireAdmin();
 
   const id = String(formData.get("id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
@@ -87,7 +89,7 @@ export async function saveSectorAction(
 }
 
 export async function moveSectorAction(formData: FormData) {
-  await requireSession();
+  await requireAdmin();
   const id = String(formData.get("id") ?? "");
   const direction = String(formData.get("direction") ?? "");
 
@@ -107,7 +109,7 @@ export async function moveSectorAction(formData: FormData) {
 }
 
 export async function toggleSectorActiveAction(formData: FormData) {
-  await requireSession();
+  await requireAdmin();
   const id = String(formData.get("id") ?? "");
   const sector = await prisma.sector.findUnique({ where: { id }, select: { active: true } });
   if (!sector) return;
@@ -119,7 +121,7 @@ export async function deleteSectorAction(
   _prevState: SectorFormState,
   formData: FormData
 ): Promise<SectorFormState> {
-  await requireSession();
+  await requireAdmin();
   const id = String(formData.get("id") ?? "");
   if (!id) return {};
 

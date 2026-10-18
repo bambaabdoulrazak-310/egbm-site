@@ -11,7 +11,7 @@ export function NotifyToggle({ initialValue }: { initialValue: boolean }) {
     <form
       ref={formRef}
       action={toggleNotifyByEmailAction}
-      className="mt-4 flex max-w-sm items-center justify-between gap-3 rounded-lg border border-border-egbm bg-cream p-4"
+      className="mt-4 flex max-w-sm items-center justify-between gap-3 rounded-lg border border-border-egbm bg-white shadow-sm p-4"
     >
       <div className="flex items-center gap-2">
         <Bell size={18} className="text-ink-soft" />
@@ -30,7 +30,7 @@ export function NotifyToggle({ initialValue }: { initialValue: boolean }) {
           onChange={() => formRef.current?.requestSubmit()}
           className="peer sr-only"
         />
-        <div className="h-6 w-11 rounded-full bg-border-egbm transition-colors peer-checked:bg-green" />
+        <div className="h-6 w-11 rounded-full bg-border-egbm transition-colors peer-checked:bg-rust" />
         <div className="absolute left-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-5" />
       </label>
     </form>
