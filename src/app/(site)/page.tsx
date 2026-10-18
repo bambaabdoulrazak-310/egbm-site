@@ -86,8 +86,8 @@ const SECTORS: Array<{
     code: "EQUIPEMENTS_MINIERS",
     title: "Équipements miniers",
     Icon: Pickaxe,
-    photo: null,
-    alt: "",
+    photo: "/equipements-miniers.jpg",
+    alt: "Camion de chantier minier jaune dans une mine à ciel ouvert au coucher du soleil",
     desc: "Matériels et équipements pour les sites miniers.",
   },
   {
@@ -107,6 +107,28 @@ const SECTORS: Array<{
     desc: "Un besoin spécifique ? Contactez-nous, nous étudions votre demande.",
   },
 ];
+
+type PhotoSector = (typeof SECTORS)[number] & { photo: string };
+const PHOTO_SECTORS = SECTORS.filter((s): s is PhotoSector => s.photo !== null);
+const COMPACT_SECTORS = SECTORS.filter((s) => s.photo === null);
+// Les cartes photo occupent 2 colonnes sur 6 : les cartes compactes prennent le reste de la ligne.
+const COMPACT_COLS = 6 - (PHOTO_SECTORS.length % 3) * 2 || 6;
+const COMPACT_WRAPPER_CLASS: Record<number, string> = {
+  2: "md:col-span-2",
+  4: "md:col-span-4",
+  6: "md:col-span-6",
+};
+
+function SectorLink({ code }: { code: ProductCategory }) {
+  return (
+    <Link
+      href={`/produits?categorie=${code}`}
+      className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-rust hover:underline"
+    >
+      En savoir plus <ArrowRight size={14} />
+    </Link>
+  );
+}
 
 const REASONS = [
   {
@@ -242,21 +264,43 @@ export default async function AccueilPage() {
           </Link>
         </div>
         <div className="mt-8 grid gap-5 md:grid-cols-6">
-          {SECTORS.map(({ code, title, Icon, photo, alt, desc }, i) => {
-            const link = (
-              <Link
-                href={`/produits?categorie=${code}`}
-                className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-rust hover:underline"
-              >
-                En savoir plus <ArrowRight size={14} />
-              </Link>
-            );
-            // Secteur sans photo : carte compacte (icône + texte), sans grand visuel vide.
-            if (!photo) {
-              return (
+          {PHOTO_SECTORS.map(({ code, title, Icon, photo, alt, desc }) => (
+            <article
+              key={code}
+              className="overflow-hidden rounded-lg border border-border-egbm bg-white shadow-sm md:col-span-2"
+            >
+              <div className="relative h-48">
+                <Image
+                  src={photo}
+                  alt={alt}
+                  fill
+                  sizes="(min-width: 768px) 33vw, 100vw"
+                  className="object-cover"
+                />
+              </div>
+              <div className="p-5">
+                <div className="flex items-center gap-3">
+                  <Icon className="text-rust" size={26} strokeWidth={1.6} />
+                  <h3 className="font-display text-xl font-bold text-ink">{title}</h3>
+                </div>
+                <p className="mt-3 text-sm leading-relaxed text-ink-soft">{desc}</p>
+                <SectorLink code={code} />
+              </div>
+            </article>
+          ))}
+
+          {/* Secteurs sans photo : cartes compactes (icône + texte), qui remplissent la
+              place restante de la dernière ligne, empilées à côté de la dernière photo. */}
+          {COMPACT_SECTORS.length > 0 && (
+            <div
+              className={`flex flex-col gap-5 ${COMPACT_WRAPPER_CLASS[COMPACT_COLS]} ${
+                COMPACT_COLS === 6 ? "md:flex-row" : ""
+              }`}
+            >
+              {COMPACT_SECTORS.map(({ code, title, Icon, desc }) => (
                 <article
                   key={code}
-                  className="flex items-start gap-4 rounded-lg border border-border-egbm bg-white p-5 shadow-sm md:col-span-2"
+                  className="flex items-start gap-4 rounded-lg border border-border-egbm bg-white p-5 shadow-sm md:flex-1"
                 >
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-rust/10">
                     <Icon className="text-rust" size={26} strokeWidth={1.6} />
@@ -264,38 +308,12 @@ export default async function AccueilPage() {
                   <div className="min-w-0">
                     <h3 className="font-display text-xl font-bold text-ink">{title}</h3>
                     <p className="mt-1 text-sm leading-relaxed text-ink-soft">{desc}</p>
-                    {link}
+                    <SectorLink code={code} />
                   </div>
                 </article>
-              );
-            }
-            return (
-              <article
-                key={code}
-                className={`overflow-hidden rounded-lg border border-border-egbm bg-white shadow-sm ${
-                  i < 3 ? "md:col-span-2" : "md:col-span-3"
-                }`}
-              >
-                <div className="relative h-48">
-                  <Image
-                    src={photo}
-                    alt={alt}
-                    fill
-                    sizes="(min-width: 768px) 33vw, 100vw"
-                    className="object-cover"
-                  />
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center gap-3">
-                    <Icon className="text-rust" size={26} strokeWidth={1.6} />
-                    <h3 className="font-display text-xl font-bold text-ink">{title}</h3>
-                  </div>
-                  <p className="mt-3 text-sm leading-relaxed text-ink-soft">{desc}</p>
-                  {link}
-                </div>
-              </article>
-            );
-          })}
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
