@@ -41,7 +41,7 @@ export function Header() {
               EGBM
             </span>
             <span className="mt-1 hidden whitespace-nowrap text-[11px] text-ink-soft sm:block lg:hidden xl:block">
-              Construire votre avenir
+              Votre partenaire de confiance
             </span>
           </span>
         </Link>
