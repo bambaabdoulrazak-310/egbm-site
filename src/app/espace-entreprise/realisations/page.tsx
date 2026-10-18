@@ -9,6 +9,7 @@ export default async function AdminRealisationsPage() {
   const [realisations, sectors] = await Promise.all([
     prisma.realisation.findMany({ orderBy: { createdAt: "desc" } }),
     prisma.sector.findMany({
+      where: { link: null },
       orderBy: [{ position: "asc" }, { createdAt: "asc" }],
       select: { id: true, name: true },
     }),

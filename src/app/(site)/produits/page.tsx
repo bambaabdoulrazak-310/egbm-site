@@ -98,7 +98,9 @@ export default async function ProduitsPage({
         <ProduitsClient
           key={`${categorie ?? ""}|${query}`}
           products={products}
-          sectors={sectors.map((s) => ({ id: s.id, slug: s.slug, name: s.name, icon: s.icon }))}
+          sectors={sectors
+            .filter((s) => !s.link)
+            .map((s) => ({ id: s.id, slug: s.slug, name: s.name, icon: s.icon }))}
           initialSector={normalizeSectorParam(categorie)}
           initialQuery={query}
         />

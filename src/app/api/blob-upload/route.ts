@@ -9,6 +9,7 @@ const ALLOWED_TYPES = [
   "video/mp4",
   "video/webm",
   "video/quicktime",
+  "application/pdf",
 ];
 
 export async function POST(request: Request): Promise<NextResponse> {

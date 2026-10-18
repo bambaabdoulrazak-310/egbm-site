@@ -20,6 +20,7 @@ export interface AdminSector {
   description: string | null;
   photoUrl: string | null;
   icon: string;
+  link: string | null;
   active: boolean;
   productCount: number;
 }
@@ -204,6 +205,15 @@ export function AdminSecteursClient({ sectors }: { sectors: AdminSector[] }) {
             rows={2}
             className="rounded-md border border-border-egbm p-2 md:col-span-3"
           />
+          <label className="flex flex-col gap-1 text-sm text-ink-soft md:col-span-3">
+            Lien personnalisé (facultatif)
+            <input
+              name="link"
+              defaultValue={editing?.link ?? ""}
+              placeholder="Ex. /catalogues : la carte ouvre cette page au lieu des produits"
+              className="rounded-md border border-border-egbm p-2 text-ink"
+            />
+          </label>
           <div className="flex flex-wrap items-center gap-3 md:col-span-3">
             {editing?.photoUrl && (
               <Image

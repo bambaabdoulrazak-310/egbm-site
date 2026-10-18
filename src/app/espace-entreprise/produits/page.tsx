@@ -15,6 +15,7 @@ export default async function AdminProduitsPage() {
       },
     }),
     prisma.sector.findMany({
+      where: { link: null },
       orderBy: [{ position: "asc" }, { createdAt: "asc" }],
       select: { id: true, name: true },
     }),

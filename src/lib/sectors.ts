@@ -8,6 +8,7 @@ export interface PublicSector {
   description: string | null;
   photoUrl: string | null;
   icon: string;
+  link: string | null;
 }
 
 // Secteurs visibles sur le site public, dans l'ordre choisi dans l'espace entreprise.
@@ -15,7 +16,15 @@ export async function getActiveSectors(): Promise<PublicSector[]> {
   return prisma.sector.findMany({
     where: { active: true },
     orderBy: [{ position: "asc" }, { createdAt: "asc" }],
-    select: { id: true, slug: true, name: true, description: true, photoUrl: true, icon: true },
+    select: {
+      id: true,
+      slug: true,
+      name: true,
+      description: true,
+      photoUrl: true,
+      icon: true,
+      link: true,
+    },
   });
 }
 

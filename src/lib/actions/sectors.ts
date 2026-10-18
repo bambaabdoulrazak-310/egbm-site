@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guard";
 import { slugify } from "@/lib/sectors";
 import { SECTOR_ICON_KEYS } from "@/lib/sector-icons";
+import { isValidSectorLink } from "@/lib/sector-link";
 
 export interface SectorFormState {
   error?: string;
@@ -47,11 +48,16 @@ export async function saveSectorAction(
   const description = String(formData.get("description") ?? "").trim();
   const icon = String(formData.get("icon") ?? "");
   const active = formData.get("active") === "on";
+  const link = String(formData.get("link") ?? "").trim();
   const removePhoto = formData.get("removePhoto") === "on";
   const photo = formData.get("photo");
 
   if (!name) {
     return { error: "Veuillez renseigner le nom du secteur." };
+  }
+
+  if (link && !isValidSectorLink(link)) {
+    return { error: "Le lien doit commencer par « / » (page du site) ou par « https:// »." };
   }
 
   let photoUrl: string | undefined;
@@ -69,6 +75,7 @@ export async function saveSectorAction(
     description: description || null,
     icon: SECTOR_ICON_KEYS.includes(icon) ? icon : "Package",
     active,
+    link: link || null,
     ...(photoUrl ? { photoUrl } : removePhoto ? { photoUrl: null } : {}),
   };
 

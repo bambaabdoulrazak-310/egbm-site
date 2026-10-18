@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Mail, MessageCircle, Phone, MapPin } from "lucide-react";
 import { getActiveSectors } from "@/lib/sectors";
+import { sectorHref } from "@/lib/sector-link";
 
 function FacebookIcon({ size = 17 }: { size?: number }) {
   return (
@@ -26,10 +27,7 @@ const QUICK_LINKS: Array<[string, string]> = [
 
 export async function Footer() {
   const sectors = await getActiveSectors();
-  const activityLinks: Array<[string, string]> = sectors.map((s) => [
-    `/produits?categorie=${s.slug}`,
-    s.name,
-  ]);
+  const activityLinks: Array<[string, string]> = sectors.map((s) => [sectorHref(s), s.name]);
 
   return (
     <footer className="bg-night text-sm text-white/75">

@@ -23,6 +23,7 @@ export default async function AdminSecteursPage() {
         description: s.description,
         photoUrl: s.photoUrl,
         icon: s.icon,
+        link: s.link,
         active: s.active,
         productCount: _count.products,
       }))}

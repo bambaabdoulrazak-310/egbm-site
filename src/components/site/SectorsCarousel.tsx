@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { SectorIcon } from "@/components/site/SectorIcon";
+import { sectorHref } from "@/lib/sector-link";
 
 export interface CarouselSector {
   id: string;
@@ -13,6 +14,7 @@ export interface CarouselSector {
   description: string | null;
   photoUrl: string | null;
   icon: string;
+  link: string | null;
 }
 
 const GAP = 20; // = gap-5
@@ -265,7 +267,7 @@ export function SectorsCarousel({ sectors }: { sectors: CarouselSector[] }) {
                     </p>
                   )}
                   <Link
-                    href={`/produits?categorie=${sector.slug}`}
+                    href={sectorHref(sector)}
                     draggable={false}
                     tabIndex={c === 1 ? undefined : -1}
                     className="mt-auto inline-flex items-center gap-1.5 pt-4 text-sm font-semibold text-rust hover:underline"

@@ -94,11 +94,28 @@ model Sector {
   icon        String   @default("Package")
   position    Int      @default(0)
   active      Boolean  @default(true)
+  // Adresse personnalisée : si renseignée, la carte du secteur ouvre ce lien (ex. /catalogues)
+  // au lieu du filtre produits, et le secteur ne reçoit pas de produits.
+  link        String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   products     Product[]
   realisations Realisation[]
+}
+
+// Catalogue au format PDF, ajouté depuis l'espace entreprise (fichier stocké sur Vercel Blob).
+model Catalogue {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  fileUrl     String
+  fileName    String
+  fileSize    Int
+  coverUrl    String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Product {

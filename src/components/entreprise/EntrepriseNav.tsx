@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
+  BookOpen,
   ClipboardList,
   ExternalLink,
   FileText,
@@ -27,6 +28,7 @@ const BASE_ITEMS: Array<[href: string, label: string, Icon: typeof LayoutDashboa
   ["/espace-entreprise/produits", "Produits", Package],
   ["/espace-entreprise/publications", "Publications", Newspaper],
   ["/espace-entreprise/realisations", "Réalisations", Trophy],
+  ["/espace-entreprise/catalogues", "Catalogues", BookOpen],
   ["/espace-entreprise/commandes", "Commandes", ClipboardList],
   ["/espace-entreprise/demandes", "Demandes", Inbox],
   ["/espace-entreprise/avis", "Avis", Star],
