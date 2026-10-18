@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { SectorIcon } from "@/components/site/SectorIcon";
 
 export interface CarouselSector {
@@ -26,7 +26,6 @@ export function SectorsCarousel({ sectors }: { sectors: CarouselSector[] }) {
   const [pages, setPages] = useState(1);
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [userPaused, setUserPaused] = useState(false);
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const drag = useRef({ down: false, moved: false, startX: 0, startLeft: 0 });
   const [dragging, setDragging] = useState(false);
@@ -92,13 +91,13 @@ export function SectorsCarousel({ sectors }: { sectors: CarouselSector[] }) {
   }, [pages, scrollToIndex, step]);
 
   // Défilement automatique : il tourne dès qu'il y a plus de cartes que de place, sauf pendant
-  // une interaction (toucher, glissé, clavier) ou si le visiteur a mis le carrousel en pause.
+  // une interaction (toucher, glissé, clavier, clic sur une flèche ou un point).
   // Avec « réduire les animations », le changement de carte se fait sans animation.
   useEffect(() => {
-    if (pages <= 1 || paused || userPaused) return;
+    if (pages <= 1 || paused) return;
     const id = setInterval(next, AUTO_SCROLL_MS);
     return () => clearInterval(id);
-  }, [pages, paused, userPaused, next]);
+  }, [pages, paused, next]);
 
   useEffect(
     () => () => {
@@ -155,6 +154,7 @@ export function SectorsCarousel({ sectors }: { sectors: CarouselSector[] }) {
       onTouchEnd={() => pauseFor(6000)}
       className="relative"
     >
+      <div className="relative">
       <div
         ref={track}
         onPointerDown={onPointerDown}
@@ -220,7 +220,35 @@ export function SectorsCarousel({ sectors }: { sectors: CarouselSector[] }) {
       </div>
 
       {multiple && (
-        <div className="mt-4 flex items-center justify-between gap-4">
+        <>
+          <button
+            type="button"
+            onClick={() => {
+              prev();
+              pauseFor(6000);
+            }}
+            aria-label="Secteurs précédents"
+            className="absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border-egbm bg-white text-ink shadow-md transition-colors hover:border-rust hover:text-rust md:-left-5"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              next();
+              pauseFor(6000);
+            }}
+            aria-label="Secteurs suivants"
+            className="absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border-egbm bg-white text-ink shadow-md transition-colors hover:border-rust hover:text-rust md:-right-5"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </>
+      )}
+      </div>
+
+      {multiple && (
+        <div className="mt-4 flex items-center justify-center gap-4">
           <div className="flex items-center gap-1.5" aria-label="Pagination du carrousel">
             {Array.from({ length: pages }, (_, i) => (
               <button
@@ -237,38 +265,6 @@ export function SectorsCarousel({ sectors }: { sectors: CarouselSector[] }) {
                 }`}
               />
             ))}
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setUserPaused((p) => !p)}
-              aria-label={userPaused ? "Reprendre le défilement automatique" : "Mettre le défilement en pause"}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-border-egbm bg-white text-ink transition-colors hover:border-rust hover:text-rust"
-            >
-              {userPaused ? <Play size={15} /> : <Pause size={15} />}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                prev();
-                pauseFor(6000);
-              }}
-              aria-label="Secteurs précédents"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-border-egbm bg-white text-ink transition-colors hover:border-rust hover:text-rust"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                next();
-                pauseFor(6000);
-              }}
-              aria-label="Secteurs suivants"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-border-egbm bg-white text-ink transition-colors hover:border-rust hover:text-rust"
-            >
-              <ChevronRight size={18} />
-            </button>
           </div>
         </div>
       )}
