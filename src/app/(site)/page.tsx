@@ -91,7 +91,7 @@ const SECTORS: Array<{
   },
   {
     code: "AUTRES_SERVICES",
-    title: "Autres services & catalogue",
+    title: "Catalogues et autres services",
     Icon: LayoutGrid,
     photo: null,
     alt: "",
@@ -233,15 +233,41 @@ export default async function AccueilPage() {
           </Link>
         </div>
         <div className="mt-8 grid gap-5 md:grid-cols-6">
-          {SECTORS.map(({ code, title, Icon, photo, alt, desc }, i) => (
-            <article
-              key={code}
-              className={`overflow-hidden rounded-lg border border-border-egbm bg-white shadow-sm ${
-                i < 3 ? "md:col-span-2" : "md:col-span-3"
-              }`}
-            >
-              <div className="relative h-48">
-                {photo ? (
+          {SECTORS.map(({ code, title, Icon, photo, alt, desc }, i) => {
+            const link = (
+              <Link
+                href={`/produits?categorie=${code}`}
+                className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-rust hover:underline"
+              >
+                En savoir plus <ArrowRight size={14} />
+              </Link>
+            );
+            // Secteur sans photo : carte compacte (icône + texte), sans grand visuel vide.
+            if (!photo) {
+              return (
+                <article
+                  key={code}
+                  className="flex items-start gap-4 rounded-lg border border-border-egbm bg-white p-5 shadow-sm md:col-span-3"
+                >
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-rust/10">
+                    <Icon className="text-rust" size={26} strokeWidth={1.6} />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-display text-xl font-bold text-ink">{title}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-ink-soft">{desc}</p>
+                    {link}
+                  </div>
+                </article>
+              );
+            }
+            return (
+              <article
+                key={code}
+                className={`overflow-hidden rounded-lg border border-border-egbm bg-white shadow-sm ${
+                  i < 3 ? "md:col-span-2" : "md:col-span-3"
+                }`}
+              >
+                <div className="relative h-48">
                   <Image
                     src={photo}
                     alt={alt}
@@ -249,31 +275,18 @@ export default async function AccueilPage() {
                     sizes="(min-width: 768px) 33vw, 100vw"
                     className="object-cover"
                   />
-                ) : (
-                  <div
-                    role="img"
-                    aria-label={title}
-                    className="flex h-full w-full items-center justify-center bg-gradient-to-br from-night to-cement"
-                  >
-                    <Icon className="text-white/70" size={64} strokeWidth={1.2} />
-                  </div>
-                )}
-              </div>
-              <div className="p-5">
-                <div className="flex items-center gap-3">
-                  <Icon className="text-rust" size={26} strokeWidth={1.6} />
-                  <h3 className="font-display text-xl font-bold text-ink">{title}</h3>
                 </div>
-                <p className="mt-3 text-sm leading-relaxed text-ink-soft">{desc}</p>
-                <Link
-                  href={`/produits?categorie=${code}`}
-                  className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-rust hover:underline"
-                >
-                  En savoir plus <ArrowRight size={14} />
-                </Link>
-              </div>
-            </article>
-          ))}
+                <div className="p-5">
+                  <div className="flex items-center gap-3">
+                    <Icon className="text-rust" size={26} strokeWidth={1.6} />
+                    <h3 className="font-display text-xl font-bold text-ink">{title}</h3>
+                  </div>
+                  <p className="mt-3 text-sm leading-relaxed text-ink-soft">{desc}</p>
+                  {link}
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 

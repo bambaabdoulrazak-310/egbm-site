@@ -11,7 +11,7 @@ export const CATEGORY_LABELS: Record<ProductCategory, string> = {
   AGRO_CHIMIQUE: "Agro-chimique",
   MATERIAUX_INDUSTRIELS: "Matériaux industriels",
   EQUIPEMENTS_MINIERS: "Équipements miniers",
-  AUTRES_SERVICES: "Autres services & catalogue",
+  AUTRES_SERVICES: "Catalogues et autres services",
 };
 
 export const CATEGORY_ICON = {

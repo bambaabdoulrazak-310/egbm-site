@@ -38,7 +38,7 @@ const FAMILIES = [
     text: "Matériels et équipements pour les sites miniers. Contactez-nous pour connaître les références disponibles.",
   },
   {
-    title: "Autres services & catalogue",
+    title: "Catalogues et autres services",
     text: "Vous ne trouvez pas ce que vous cherchez ? Parcourez notre catalogue ou contactez-nous pour un besoin spécifique.",
   },
 ];
