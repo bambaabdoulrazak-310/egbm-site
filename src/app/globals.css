@@ -14,6 +14,7 @@
   --color-bg-alt: #e0d8c7;
   --color-surface: #f3f0ea;
   --color-night: #1e272c;
+  --color-forest: #0f3a30;
   --color-cream: #f4efe3;
   --color-paper: #fdfbf6;
   --color-border-egbm: #cdc4ae;
@@ -27,6 +28,45 @@
 body {
   background: var(--color-bg);
   color: var(--color-ink);
+}
+
+/* Curseur de prix à deux poignées : deux <input range> superposés dont seules
+   les poignées captent la souris. */
+.dual-range {
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  margin: 0;
+}
+.dual-range::-webkit-slider-runnable-track {
+  background: transparent;
+}
+.dual-range::-moz-range-track {
+  background: transparent;
+}
+.dual-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: auto;
+  height: 16px;
+  width: 16px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 2px solid #e8681e;
+  cursor: pointer;
+}
+.dual-range::-moz-range-thumb {
+  pointer-events: auto;
+  height: 16px;
+  width: 16px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 2px solid #e8681e;
+  cursor: pointer;
+}
+.dual-range:disabled::-webkit-slider-thumb {
+  cursor: default;
+  opacity: 0.5;
 }
 
 @media print {

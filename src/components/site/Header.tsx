@@ -27,21 +27,28 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border-egbm/60 bg-white">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
-        <Link href="/" className="flex shrink-0 items-center gap-2">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-3">
+        <Link href="/" className="flex shrink-0 items-center gap-2.5">
           <Image
             src="/logo.jpg"
             alt="Logo EGBM"
-            width={40}
-            height={40}
+            width={48}
+            height={48}
             className="rounded-full object-cover"
           />
-          <span className="font-display text-2xl font-extrabold tracking-wide text-ink">EGBM</span>
+          <span className="leading-none">
+            <span className="block font-display text-2xl font-extrabold tracking-wide text-ink">
+              EGBM
+            </span>
+            <span className="mt-1 hidden whitespace-nowrap text-[11px] text-ink-soft sm:block lg:hidden xl:block">
+              Construire votre avenir
+            </span>
+          </span>
         </Link>
 
         <nav
           aria-label="Navigation principale"
-          className="hidden items-center gap-5 text-sm font-medium lg:flex xl:gap-8"
+          className="hidden items-center gap-5 text-sm font-medium lg:flex xl:gap-7"
         >
           {NAV_ITEMS.map(([href, label]) => {
             const active = isActive(pathname, href);
@@ -61,10 +68,28 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3 sm:gap-4">
+          <form
+            action="/produits"
+            method="get"
+            role="search"
+            className="relative hidden xl:block"
+          >
+            <Search
+              size={16}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft"
+            />
+            <input
+              type="search"
+              name="q"
+              aria-label="Rechercher un produit"
+              placeholder="Rechercher un produit…"
+              className="w-52 rounded-md border border-border-egbm bg-white py-2 pl-9 pr-3 text-sm outline-none focus:border-rust"
+            />
+          </form>
           <Link
             href="/produits"
             aria-label="Rechercher un produit"
-            className="text-ink transition-colors hover:text-rust"
+            className="text-ink transition-colors hover:text-rust xl:hidden"
           >
             <Search size={20} />
           </Link>
@@ -82,14 +107,14 @@ export function Header() {
           >
             <ShoppingCart size={20} />
             {totalItems > 0 && (
-              <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-rust text-[10px] font-bold text-white">
+              <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-rust px-1 text-[10px] font-bold text-white">
                 {totalItems}
               </span>
             )}
           </Link>
           <Link
             href="/devis"
-            className="hidden items-center gap-1.5 rounded-md bg-rust px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-rust-dark md:flex"
+            className="hidden shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md bg-rust px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-rust-dark md:flex"
           >
             Demander un devis <ArrowRight size={15} />
           </Link>

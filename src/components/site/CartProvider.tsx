@@ -14,7 +14,7 @@ type Cart = Record<string, number>;
 interface CartContextValue {
   cart: Cart;
   totalItems: number;
-  addToCart: (productId: string) => void;
+  addToCart: (productId: string, qty?: number) => void;
   setQty: (productId: string, qty: number) => void;
   clearCart: () => void;
 }
@@ -44,8 +44,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
   }, [cart, hydrated]);
 
-  const addToCart = useCallback((productId: string) => {
-    setCart((prev) => ({ ...prev, [productId]: (prev[productId] ?? 0) + 1 }));
+  const addToCart = useCallback((productId: string, qty = 1) => {
+    setCart((prev) => ({ ...prev, [productId]: (prev[productId] ?? 0) + Math.max(1, qty) }));
   }, []);
 
   const setQty = useCallback((productId: string, qty: number) => {
