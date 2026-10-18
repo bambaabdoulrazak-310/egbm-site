@@ -3,15 +3,15 @@
 import { useActionState, useEffect, useState } from "react";
 import Image from "next/image";
 import { Film, Pencil, Plus, Trash2 } from "lucide-react";
-import { CATEGORY_LABELS, formatFCFA, type MediaItem } from "@/lib/catalog";
+import { formatFCFA, type MediaItem } from "@/lib/catalog";
 import { saveProductAction, deleteProductAction, type ProductFormState } from "@/lib/actions/products";
 import { MediaUploader } from "@/components/entreprise/MediaUploader";
-import type { ProductCategory } from "@/generated/prisma/enums";
 
 export interface AdminProduit {
   id: string;
   name: string;
-  category: ProductCategory;
+  sectorId: string;
+  sector: { name: string };
   price: number;
   stock: number;
   sold: number;
@@ -19,10 +19,15 @@ export interface AdminProduit {
   media: MediaItem[];
 }
 
-const CATEGORIES = Object.keys(CATEGORY_LABELS) as ProductCategory[];
 const initialState: ProductFormState = {};
 
-export function AdminProduitsClient({ products }: { products: AdminProduit[] }) {
+export function AdminProduitsClient({
+  products,
+  sectors,
+}: {
+  products: AdminProduit[];
+  sectors: Array<{ id: string; name: string }>;
+}) {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<AdminProduit | null>(null);
   const [state, formAction, pending] = useActionState(saveProductAction, initialState);
@@ -73,13 +78,15 @@ export function AdminProduitsClient({ products }: { products: AdminProduit[] }) 
             className="rounded-md border border-border-egbm p-2 md:col-span-2"
           />
           <select
-            name="category"
-            defaultValue={editing?.category ?? CATEGORIES[0]}
+            name="sectorId"
+            defaultValue={editing?.sectorId ?? sectors[0]?.id}
+            required
+            aria-label="Secteur"
             className="rounded-md border border-border-egbm p-2"
           >
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {CATEGORY_LABELS[c]}
+            {sectors.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
               </option>
             ))}
           </select>
@@ -129,7 +136,7 @@ export function AdminProduitsClient({ products }: { products: AdminProduit[] }) 
             <tr>
               <th className="p-3"></th>
               <th className="p-3 text-left">Produit</th>
-              <th className="p-3 text-left">Catégorie</th>
+              <th className="p-3 text-left">Secteur</th>
               <th className="p-3 text-left">Prix</th>
               <th className="p-3 text-left">Stock</th>
               <th className="p-3 text-left">Ventes</th>
@@ -161,7 +168,7 @@ export function AdminProduitsClient({ products }: { products: AdminProduit[] }) 
                     )}
                   </td>
                   <td className="p-3 font-medium">{p.name}</td>
-                  <td className="p-3">{CATEGORY_LABELS[p.category]}</td>
+                  <td className="p-3">{p.sector.name}</td>
                   <td className="p-3 font-mono">{formatFCFA(p.price)}</td>
                   <td className="p-3">{p.stock}</td>
                   <td className="p-3">{p.sold}</td>

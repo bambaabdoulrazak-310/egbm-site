@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { CATEGORY_LABELS, formatFCFA } from "@/lib/catalog";
+import { formatFCFA } from "@/lib/catalog";
 import { ProductGallery } from "@/components/site/ProductGallery";
 import { AddToCartButton } from "@/components/site/AddToCartButton";
 import { ProductReviews, type ReviewStatus } from "@/components/site/ProductReviews";
@@ -16,7 +16,7 @@ export const revalidate = 0;
 async function getProduct(id: string) {
   return prisma.product.findUnique({
     where: { id },
-    include: { media: { orderBy: { order: "asc" } } },
+    include: { media: { orderBy: { order: "asc" } }, sector: { select: { name: true } } },
   });
 }
 
@@ -24,7 +24,7 @@ async function getProduct(id: string) {
 function describeProduct(p: NonNullable<Awaited<ReturnType<typeof getProduct>>>) {
   return (
     p.description?.trim() ||
-    `${p.name} — ${CATEGORY_LABELS[p.category]} disponible chez EGBM à Korhogo. Prix : ${formatFCFA(p.price)}. Commande en ligne ou demande de devis.`
+    `${p.name} — ${p.sector.name} disponible chez EGBM à Korhogo. Prix : ${formatFCFA(p.price)}. Commande en ligne ou demande de devis.`
   );
 }
 
@@ -110,7 +110,7 @@ export default async function ProduitDetailPage({
           "@type": "Product",
           name: product.name,
           description: describeProduct(product),
-          category: CATEGORY_LABELS[product.category],
+          category: product.sector.name,
           ...(images.length > 0 ? { image: images } : {}),
           offers: {
             "@type": "Offer",
@@ -142,7 +142,7 @@ export default async function ProduitDetailPage({
 
         <div>
           <div className="text-xs font-semibold uppercase tracking-wide text-rust">
-            {CATEGORY_LABELS[product.category]}
+            {product.sector.name}
           </div>
           <h1 className="mt-1 font-display text-3xl font-extrabold md:text-4xl">{product.name}</h1>
           <div className="mt-3 font-mono text-2xl font-semibold">{formatFCFA(product.price)}</div>

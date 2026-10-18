@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Mail, MessageCircle, Phone, MapPin } from "lucide-react";
+import { getActiveSectors } from "@/lib/sectors";
 
 function FacebookIcon({ size = 17 }: { size?: number }) {
   return (
@@ -23,16 +24,13 @@ const QUICK_LINKS: Array<[string, string]> = [
   ["/contact", "Contact"],
 ];
 
-const ACTIVITY_LINKS: Array<[string, string]> = [
-  ["/produits?categorie=BTP", "BTP"],
-  ["/produits?categorie=AGRO_CHIMIQUE", "Agro-chimie"],
-  ["/produits?categorie=MATERIAUX_INDUSTRIELS", "Matériaux industriels"],
-  ["/produits?categorie=EQUIPEMENTS_MINIERS", "Équipements miniers"],
-  ["/produits?categorie=CATALOGUES", "Catalogues"],
-  ["/produits?categorie=AUTRES_SERVICES", "Autres services"],
-];
+export async function Footer() {
+  const sectors = await getActiveSectors();
+  const activityLinks: Array<[string, string]> = sectors.map((s) => [
+    `/produits?categorie=${s.slug}`,
+    s.name,
+  ]);
 
-export function Footer() {
   return (
     <footer className="bg-night text-sm text-white/75">
       <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 md:grid-cols-4">
@@ -84,7 +82,7 @@ export function Footer() {
         <div>
           <div className="font-display text-base font-bold text-white">Nos activités</div>
           <ul className="mt-3 flex flex-col gap-2">
-            {ACTIVITY_LINKS.map(([href, label]) => (
+            {activityLinks.map(([href, label]) => (
               <li key={href}>
                 <Link href={href} className="transition-colors hover:text-white">
                   {label}

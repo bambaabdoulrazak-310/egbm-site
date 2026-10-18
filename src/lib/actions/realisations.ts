@@ -5,14 +5,12 @@ import { put } from "@vercel/blob";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
-import { ProductCategory } from "@/generated/prisma/enums";
 
 export interface RealisationFormState {
   error?: string;
   success?: boolean;
 }
 
-const CATEGORIES = Object.values(ProductCategory);
 const ALLOWED_PHOTO_TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
@@ -29,7 +27,7 @@ export async function saveRealisationAction(
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const location = String(formData.get("location") ?? "").trim();
-  const category = String(formData.get("category") ?? "");
+  const sectorIdRaw = String(formData.get("sectorId") ?? "");
   const photo = formData.get("photo");
 
   if (!title || !description) {
@@ -46,13 +44,16 @@ export async function saveRealisationAction(
     photoUrl = blob.url;
   }
 
+  // Le secteur est facultatif ; s'il est fourni il doit exister.
+  const sector = sectorIdRaw
+    ? await prisma.sector.findUnique({ where: { id: sectorIdRaw }, select: { id: true } })
+    : null;
+
   const data = {
     title,
     description,
     location: location || null,
-    category: CATEGORIES.includes(category as (typeof CATEGORIES)[number])
-      ? (category as (typeof CATEGORIES)[number])
-      : null,
+    sectorId: sector?.id ?? null,
     ...(photoUrl ? { photoUrl } : {}),
   };
 

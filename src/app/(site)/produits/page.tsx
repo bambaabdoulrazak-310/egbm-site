@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { getActiveSectors, normalizeSectorParam } from "@/lib/sectors";
 import { ProduitsClient } from "@/components/site/ProduitsClient";
 
 export const metadata: Metadata = {
@@ -20,52 +21,29 @@ function isRecent(date: Date) {
   return Date.now() - date.getTime() < NEW_PRODUCT_DAYS * 24 * 60 * 60 * 1000;
 }
 
-const FAMILIES = [
-  {
-    title: "BTP",
-    text: "Tout ce qu'il faut pour vos chantiers de construction : matériaux de gros œuvre et équipements pour mener vos projets du terrassement aux finitions.",
-  },
-  {
-    title: "Agro-chimie",
-    text: "Engrais, herbicides et insecticides pour protéger vos cultures et améliorer vos rendements, adaptés aux exploitations de la région de Korhogo.",
-  },
-  {
-    title: "Matériaux industriels",
-    text: "Fer, tôles, contreplaqué, fil de fer et autres matériaux pour vos ateliers, vos structures et vos aménagements.",
-  },
-  {
-    title: "Équipements miniers",
-    text: "Matériels et équipements pour les sites miniers. Contactez-nous pour connaître les références disponibles.",
-  },
-  {
-    title: "Catalogues",
-    text: "Parcourez l'ensemble de nos produits et demandez un devis pour la référence qu'il vous faut.",
-  },
-  {
-    title: "Autres services",
-    text: "Un besoin spécifique ? Contactez-nous, nous étudions votre demande.",
-  },
-];
-
 export default async function ProduitsPage({
   searchParams,
 }: {
   searchParams: Promise<{ categorie?: string; q?: string }>;
 }) {
   const { categorie, q } = await searchParams;
-  const rows = await prisma.product.findMany({
-    orderBy: { name: "asc" },
-    select: {
-      id: true,
-      name: true,
-      category: true,
-      price: true,
-      stock: true,
-      sold: true,
-      createdAt: true,
-      media: { orderBy: { order: "asc" }, take: 1 },
-    },
-  });
+  const [rows, sectors] = await Promise.all([
+    prisma.product.findMany({
+      orderBy: { name: "asc" },
+      select: {
+        id: true,
+        name: true,
+        sectorId: true,
+        sector: { select: { name: true, icon: true } },
+        price: true,
+        stock: true,
+        sold: true,
+        createdAt: true,
+        media: { orderBy: { order: "asc" }, take: 1 },
+      },
+    }),
+    getActiveSectors(),
+  ]);
 
   // Pastilles calculées à partir des données réelles : jamais inventées.
   const topSellerIds = new Set(
@@ -75,8 +53,10 @@ export default async function ProduitsPage({
       .slice(0, TOP_SELLERS_COUNT)
       .map((p) => p.id)
   );
-  const products = rows.map(({ createdAt, ...p }) => ({
+  const products = rows.map(({ createdAt, sector, ...p }) => ({
     ...p,
+    sectorName: sector.name,
+    sectorIcon: sector.icon,
     createdAt: createdAt.getTime(),
     isNew: isRecent(createdAt),
     topSeller: topSellerIds.has(p.id),
@@ -118,21 +98,26 @@ export default async function ProduitsPage({
         <ProduitsClient
           key={`${categorie ?? ""}|${query}`}
           products={products}
-          initialCategory={categorie}
+          sectors={sectors.map((s) => ({ id: s.id, slug: s.slug, name: s.name, icon: s.icon }))}
+          initialSector={normalizeSectorParam(categorie)}
           initialQuery={query}
         />
 
-        <section className="mt-14 border-t border-border-egbm pt-10">
-          <h2 className="font-display text-2xl font-bold">Nos familles de produits</h2>
-          <div className="mt-5 grid gap-5 md:grid-cols-3">
-            {FAMILIES.map((f) => (
-              <div key={f.title}>
-                <h3 className="font-display text-lg font-bold text-rust">{f.title}</h3>
-                <p className="mt-1 text-sm leading-relaxed text-ink-soft">{f.text}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        {sectors.some((s) => s.description) && (
+          <section className="mt-14 border-t border-border-egbm pt-10">
+            <h2 className="font-display text-2xl font-bold">Nos familles de produits</h2>
+            <div className="mt-5 grid gap-5 md:grid-cols-3">
+              {sectors
+                .filter((s) => s.description)
+                .map((s) => (
+                  <div key={s.id}>
+                    <h3 className="font-display text-lg font-bold text-rust">{s.name}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-ink-soft">{s.description}</p>
+                  </div>
+                ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

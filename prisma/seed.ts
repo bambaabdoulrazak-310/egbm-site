@@ -23,19 +23,38 @@ async function main() {
 
   console.log(`Compte Administrateur prêt : ${admin.email}`);
 
+  // Secteurs d'activité (modifiables ensuite depuis l'espace entreprise)
+  const sectorSeed = [
+    { slug: "btp", name: "BTP", icon: "HardHat", photoUrl: "/btp-chantier.jpg", description: "Matériaux de construction, équipements et accompagnement de vos chantiers." },
+    { slug: "agro-chimique", name: "Agro-chimie", icon: "Leaf", photoUrl: "/agrochimie-secteur.webp", description: "Semences, engrais et intrants agricoles pour une meilleure productivité." },
+    { slug: "materiaux-industriels", name: "Matériaux industriels", icon: "Package", photoUrl: "/materiaux-industriels-secteur.jpg", description: "Acier, fer, ciment et autres matériaux pour vos projets." },
+    { slug: "equipements-miniers", name: "Équipements miniers", icon: "Pickaxe", photoUrl: "/equipements-miniers.jpg", description: "Matériels et équipements pour les sites miniers." },
+    { slug: "catalogues", name: "Catalogues", icon: "BookOpen", photoUrl: null, description: "Parcourez l'ensemble de nos produits et demandez un devis pour la référence qu'il vous faut." },
+    { slug: "autres-services", name: "Autres services", icon: "Wrench", photoUrl: null, description: "Un besoin spécifique ? Contactez-nous, nous étudions votre demande." },
+  ];
+  const sectorIds: Record<string, string> = {};
+  for (const [position, sector] of sectorSeed.entries()) {
+    const row = await prisma.sector.upsert({
+      where: { slug: sector.slug },
+      update: {},
+      create: { ...sector, position },
+    });
+    sectorIds[sector.slug] = row.id;
+  }
+
   const productCount = await prisma.product.count();
   if (productCount === 0) {
     await prisma.product.createMany({
       data: [
-        { name: "Ciment CPA 42.5 (sac 50kg)", category: "BTP", price: 5500, stock: 320, sold: 1450 },
-        { name: "Fer à béton HA10 (barre 12m)", category: "BTP", price: 6800, stock: 180, sold: 620 },
-        { name: "Gravier concassé 15/25 (tonne)", category: "BTP", price: 12000, stock: 40, sold: 210 },
-        { name: "Engrais NPK 15-15-15 (sac 50kg)", category: "AGRO_CHIMIQUE", price: 21000, stock: 150, sold: 980 },
-        { name: "Herbicide glyphosate (bidon 5L)", category: "AGRO_CHIMIQUE", price: 18500, stock: 90, sold: 540 },
-        { name: "Insecticide cyperméthrine (1L)", category: "AGRO_CHIMIQUE", price: 6200, stock: 210, sold: 720 },
-        { name: "Tôle bac acier galvanisé (feuille)", category: "MATERIAUX_INDUSTRIELS", price: 9800, stock: 75, sold: 310 },
-        { name: "Contreplaqué marine 18mm (feuille)", category: "MATERIAUX_INDUSTRIELS", price: 15500, stock: 60, sold: 190 },
-        { name: "Fil de fer recuit (rouleau 25kg)", category: "MATERIAUX_INDUSTRIELS", price: 22000, stock: 45, sold: 150 },
+        { name: "Ciment CPA 42.5 (sac 50kg)", sectorId: sectorIds["btp"], price: 5500, stock: 320, sold: 1450 },
+        { name: "Fer à béton HA10 (barre 12m)", sectorId: sectorIds["btp"], price: 6800, stock: 180, sold: 620 },
+        { name: "Gravier concassé 15/25 (tonne)", sectorId: sectorIds["btp"], price: 12000, stock: 40, sold: 210 },
+        { name: "Engrais NPK 15-15-15 (sac 50kg)", sectorId: sectorIds["agro-chimique"], price: 21000, stock: 150, sold: 980 },
+        { name: "Herbicide glyphosate (bidon 5L)", sectorId: sectorIds["agro-chimique"], price: 18500, stock: 90, sold: 540 },
+        { name: "Insecticide cyperméthrine (1L)", sectorId: sectorIds["agro-chimique"], price: 6200, stock: 210, sold: 720 },
+        { name: "Tôle bac acier galvanisé (feuille)", sectorId: sectorIds["materiaux-industriels"], price: 9800, stock: 75, sold: 310 },
+        { name: "Contreplaqué marine 18mm (feuille)", sectorId: sectorIds["materiaux-industriels"], price: 15500, stock: 60, sold: 190 },
+        { name: "Fil de fer recuit (rouleau 25kg)", sectorId: sectorIds["materiaux-industriels"], price: 22000, stock: 45, sold: 150 },
       ],
     });
     console.log("Produits de démonstration créés.");

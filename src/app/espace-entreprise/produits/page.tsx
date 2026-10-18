@@ -6,9 +6,18 @@ export const metadata: Metadata = { title: "Produits — Espace Entreprise" };
 export const revalidate = 0;
 
 export default async function AdminProduitsPage() {
-  const products = await prisma.product.findMany({
-    orderBy: { name: "asc" },
-    include: { media: { orderBy: { order: "asc" } } },
-  });
-  return <AdminProduitsClient products={products} />;
+  const [products, sectors] = await Promise.all([
+    prisma.product.findMany({
+      orderBy: { name: "asc" },
+      include: {
+        media: { orderBy: { order: "asc" } },
+        sector: { select: { name: true } },
+      },
+    }),
+    prisma.sector.findMany({
+      orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+      select: { id: true, name: true },
+    }),
+  ]);
+  return <AdminProduitsClient products={products} sectors={sectors} />;
 }

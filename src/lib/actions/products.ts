@@ -4,14 +4,11 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
-import { ProductCategory } from "@/generated/prisma/enums";
 
 export interface ProductFormState {
   error?: string;
   success?: boolean;
 }
-
-const CATEGORIES = Object.values(ProductCategory);
 
 const mediaSchema = z.array(
   z.object({
@@ -28,7 +25,7 @@ export async function saveProductAction(
 
   const id = String(formData.get("id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
-  const category = String(formData.get("category") ?? "");
+  const sectorId = String(formData.get("sectorId") ?? "");
   const price = Number(formData.get("price"));
   const stock = Number(formData.get("stock") ?? 0);
   const description = String(formData.get("description") ?? "").trim();
@@ -37,8 +34,11 @@ export async function saveProductAction(
   if (!name || !Number.isFinite(price) || price <= 0) {
     return { error: "Veuillez renseigner un nom et un prix valides." };
   }
-  if (!CATEGORIES.includes(category as (typeof CATEGORIES)[number])) {
-    return { error: "Catégorie invalide." };
+  const sector = sectorId
+    ? await prisma.sector.findUnique({ where: { id: sectorId }, select: { id: true } })
+    : null;
+  if (!sector) {
+    return { error: "Secteur invalide." };
   }
 
   let media: z.infer<typeof mediaSchema>;
@@ -50,7 +50,7 @@ export async function saveProductAction(
 
   const data = {
     name,
-    category: category as (typeof CATEGORIES)[number],
+    sectorId: sector.id,
     price: Math.round(price),
     stock: Math.max(0, Math.round(Number.isFinite(stock) ? stock : 0)),
     description: description || null,

@@ -3,27 +3,30 @@
 import { useActionState, useEffect, useState } from "react";
 import Image from "next/image";
 import { MapPin, Pencil, Plus, Trash2 } from "lucide-react";
-import { CATEGORY_LABELS } from "@/lib/catalog";
 import {
   saveRealisationAction,
   deleteRealisationAction,
   type RealisationFormState,
 } from "@/lib/actions/realisations";
-import type { ProductCategory } from "@/generated/prisma/enums";
 
 export interface AdminRealisation {
   id: string;
   title: string;
   description: string;
   location: string | null;
-  category: ProductCategory | null;
+  sectorId: string | null;
   photoUrl: string | null;
 }
 
-const CATEGORIES = Object.keys(CATEGORY_LABELS) as ProductCategory[];
 const initialState: RealisationFormState = {};
 
-export function AdminRealisationsClient({ realisations }: { realisations: AdminRealisation[] }) {
+export function AdminRealisationsClient({
+  realisations,
+  sectors,
+}: {
+  realisations: AdminRealisation[];
+  sectors: Array<{ id: string; name: string }>;
+}) {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<AdminRealisation | null>(null);
   const [state, formAction, pending] = useActionState(saveRealisationAction, initialState);
@@ -76,14 +79,15 @@ export function AdminRealisationsClient({ realisations }: { realisations: AdminR
             className="rounded-md border border-border-egbm p-2"
           />
           <select
-            name="category"
-            defaultValue={editing?.category ?? ""}
+            name="sectorId"
+            defaultValue={editing?.sectorId ?? ""}
+            aria-label="Secteur"
             className="rounded-md border border-border-egbm p-2"
           >
             <option value="">Secteur (optionnel)</option>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {CATEGORY_LABELS[c]}
+            {sectors.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
               </option>
             ))}
           </select>

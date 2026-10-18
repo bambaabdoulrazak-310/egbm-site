@@ -7,22 +7,16 @@ import {
   Clock,
   FileText,
   Handshake,
-  BookOpen,
   HardHat,
-  Leaf,
   MapPin,
-  Package,
-  Pickaxe,
   ShieldCheck,
   Truck,
   UserCheck,
   Users,
-  Wrench,
-  type LucideIcon,
 } from "lucide-react";
-import type { ProductCategory } from "@/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
-import { CATEGORY_ICON, CATEGORY_LABELS, CATEGORY_TEXT_COLOR } from "@/lib/catalog";
+import { getActiveSectors } from "@/lib/sectors";
+import { SectorIcon } from "@/components/site/SectorIcon";
 import { COMPANY, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import { JsonLd } from "@/components/site/JsonLd";
 
@@ -49,80 +43,16 @@ const PROMISES = [
   { Icon: Users, title: "Conseil", desc: "Une équipe expérimentée à votre écoute." },
 ];
 
-// photo: null = visuel provisoire (dégradé + icône) en attendant une vraie photo.
-const SECTORS: Array<{
-  code: ProductCategory;
-  title: string;
-  Icon: LucideIcon;
-  photo: string | null;
-  alt: string;
-  desc: string;
-}> = [
-  {
-    code: "BTP",
-    title: "BTP",
-    Icon: HardHat,
-    photo: "/btp-chantier.jpg",
-    alt: "Bâtiment en construction avec grue sur un chantier BTP",
-    desc: "Matériaux de construction, équipements et accompagnement de vos chantiers.",
-  },
-  {
-    code: "AGRO_CHIMIQUE",
-    title: "Agro-chimie",
-    Icon: Leaf,
-    photo: "/agrochimie-secteur.webp",
-    alt: "Semences et engrais déposés dans un champ cultivé",
-    desc: "Semences, engrais et intrants agricoles pour une meilleure productivité.",
-  },
-  {
-    code: "MATERIAUX_INDUSTRIELS",
-    title: "Matériaux industriels",
-    Icon: Package,
-    photo: "/materiaux-industriels-secteur.jpg",
-    alt: "Barres de fer à béton empilées",
-    desc: "Acier, fer, ciment et autres matériaux pour vos projets.",
-  },
-  {
-    code: "EQUIPEMENTS_MINIERS",
-    title: "Équipements miniers",
-    Icon: Pickaxe,
-    photo: "/equipements-miniers.jpg",
-    alt: "Camion de chantier minier jaune dans une mine à ciel ouvert au coucher du soleil",
-    desc: "Matériels et équipements pour les sites miniers.",
-  },
-  {
-    code: "CATALOGUES",
-    title: "Catalogues",
-    Icon: BookOpen,
-    photo: null,
-    alt: "",
-    desc: "Parcourez l'ensemble de nos produits et demandez un devis pour la référence qu'il vous faut.",
-  },
-  {
-    code: "AUTRES_SERVICES",
-    title: "Autres services",
-    Icon: Wrench,
-    photo: null,
-    alt: "",
-    desc: "Un besoin spécifique ? Contactez-nous, nous étudions votre demande.",
-  },
-];
-
-type PhotoSector = (typeof SECTORS)[number] & { photo: string };
-const PHOTO_SECTORS = SECTORS.filter((s): s is PhotoSector => s.photo !== null);
-const COMPACT_SECTORS = SECTORS.filter((s) => s.photo === null);
-// Les cartes photo occupent 2 colonnes sur 6 : les cartes compactes prennent le reste de la ligne.
-const COMPACT_COLS = 6 - (PHOTO_SECTORS.length % 3) * 2 || 6;
 const COMPACT_WRAPPER_CLASS: Record<number, string> = {
   2: "md:col-span-2",
   4: "md:col-span-4",
   6: "md:col-span-6",
 };
 
-function SectorLink({ code }: { code: ProductCategory }) {
+function SectorLink({ slug }: { slug: string }) {
   return (
     <Link
-      href={`/produits?categorie=${code}`}
+      href={`/produits?categorie=${slug}`}
       className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-rust hover:underline"
     >
       En savoir plus <ArrowRight size={14} />
@@ -154,13 +84,24 @@ const REASONS = [
 ];
 
 export default async function AccueilPage() {
-  const [realisations, productCount] = await Promise.all([
-    prisma.realisation.findMany({ orderBy: { createdAt: "desc" }, take: 4 }),
+  const [realisations, productCount, sectors] = await Promise.all([
+    prisma.realisation.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 4,
+      include: { sector: { select: { name: true, icon: true } } },
+    }),
     prisma.product.count(),
+    getActiveSectors(),
   ]);
 
+  // Secteur avec photo : grande carte (2 colonnes sur 6). Sans photo : carte compacte, les
+  // cartes compactes se partagent la place restante de la dernière ligne.
+  const photoSectors = sectors.filter((s) => s.photoUrl);
+  const compactSectors = sectors.filter((s) => !s.photoUrl);
+  const compactCols = 6 - (photoSectors.length % 3) * 2 || 6;
+
   const stats: Array<[string, string]> = [
-    [String(SECTORS.length), "secteurs d'activité"],
+    [String(sectors.length), sectors.length > 1 ? "secteurs d'activité" : "secteur d'activité"],
     [String(productCount), productCount > 1 ? "produits référencés" : "produit référencé"],
     ["24/7", "assistance & conseil"],
   ];
@@ -264,54 +205,66 @@ export default async function AccueilPage() {
           </Link>
         </div>
         <div className="mt-8 grid gap-5 md:grid-cols-6">
-          {PHOTO_SECTORS.map(({ code, title, Icon, photo, alt, desc }) => (
-            <article
-              key={code}
-              className="overflow-hidden rounded-lg border border-border-egbm bg-white shadow-sm md:col-span-2"
-            >
-              <div className="relative h-48">
-                <Image
-                  src={photo}
-                  alt={alt}
-                  fill
-                  sizes="(min-width: 768px) 33vw, 100vw"
-                  className="object-cover"
-                />
-              </div>
-              <div className="p-5">
-                <div className="flex items-center gap-3">
-                  <Icon className="text-rust" size={26} strokeWidth={1.6} />
-                  <h3 className="font-display text-xl font-bold text-ink">{title}</h3>
+          {photoSectors.map((sector) => {
+            return (
+              <article
+                key={sector.id}
+                className="overflow-hidden rounded-lg border border-border-egbm bg-white shadow-sm md:col-span-2"
+              >
+                <div className="relative h-48">
+                  <Image
+                    src={sector.photoUrl!}
+                    alt={sector.name}
+                    fill
+                    sizes="(min-width: 768px) 33vw, 100vw"
+                    className="object-cover"
+                  />
                 </div>
-                <p className="mt-3 text-sm leading-relaxed text-ink-soft">{desc}</p>
-                <SectorLink code={code} />
-              </div>
-            </article>
-          ))}
+                <div className="p-5">
+                  <div className="flex items-center gap-3">
+                    <SectorIcon name={sector.icon} className="text-rust" size={26} strokeWidth={1.6} />
+                    <h3 className="font-display text-xl font-bold text-ink">{sector.name}</h3>
+                  </div>
+                  {sector.description && (
+                    <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+                      {sector.description}
+                    </p>
+                  )}
+                  <SectorLink slug={sector.slug} />
+                </div>
+              </article>
+            );
+          })}
 
           {/* Secteurs sans photo : cartes compactes (icône + texte), qui remplissent la
               place restante de la dernière ligne, empilées à côté de la dernière photo. */}
-          {COMPACT_SECTORS.length > 0 && (
+          {compactSectors.length > 0 && (
             <div
-              className={`flex flex-col gap-5 ${COMPACT_WRAPPER_CLASS[COMPACT_COLS]} ${
-                COMPACT_COLS === 6 ? "md:flex-row" : ""
+              className={`flex flex-col gap-5 ${COMPACT_WRAPPER_CLASS[compactCols]} ${
+                compactCols === 6 ? "md:flex-row" : ""
               }`}
             >
-              {COMPACT_SECTORS.map(({ code, title, Icon, desc }) => (
-                <article
-                  key={code}
-                  className="flex items-start gap-4 rounded-lg border border-border-egbm bg-white p-5 shadow-sm md:flex-1"
-                >
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-rust/10">
-                    <Icon className="text-rust" size={26} strokeWidth={1.6} />
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="font-display text-xl font-bold text-ink">{title}</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-ink-soft">{desc}</p>
-                    <SectorLink code={code} />
-                  </div>
-                </article>
-              ))}
+              {compactSectors.map((sector) => {
+                return (
+                  <article
+                    key={sector.id}
+                    className="flex items-start gap-4 rounded-lg border border-border-egbm bg-white p-5 shadow-sm md:flex-1"
+                  >
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-rust/10">
+                      <SectorIcon name={sector.icon} className="text-rust" size={26} strokeWidth={1.6} />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-display text-xl font-bold text-ink">{sector.name}</h3>
+                      {sector.description && (
+                        <p className="mt-1 text-sm leading-relaxed text-ink-soft">
+                          {sector.description}
+                        </p>
+                      )}
+                      <SectorLink slug={sector.slug} />
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           )}
         </div>
@@ -384,7 +337,6 @@ export default async function AccueilPage() {
           </div>
           <div className="mt-8 grid gap-5 sm:grid-cols-2 md:grid-cols-4">
             {realisations.map((r) => {
-              const Icon = r.category ? CATEGORY_ICON[r.category] : null;
               return (
                 <article
                   key={r.id}
@@ -399,18 +351,16 @@ export default async function AccueilPage() {
                         sizes="(min-width: 768px) 25vw, 50vw"
                         className="object-cover"
                       />
-                    ) : Icon ? (
-                      <Icon size={32} className="text-white/80" />
+                    ) : r.sector ? (
+                      <SectorIcon name={r.sector.icon} size={32} className="text-white/80" />
                     ) : (
                       <MapPin size={32} className="text-white/80" />
                     )}
                   </div>
                   <div className="p-4">
-                    {r.category && (
-                      <div
-                        className={`text-[10px] font-semibold uppercase tracking-wide ${CATEGORY_TEXT_COLOR[r.category]}`}
-                      >
-                        {CATEGORY_LABELS[r.category]}
+                    {r.sector && (
+                      <div className="text-[10px] font-semibold uppercase tracking-wide text-rust">
+                        {r.sector.name}
                       </div>
                     )}
                     <h3 className="mt-0.5 font-display font-bold text-ink">{r.title}</h3>

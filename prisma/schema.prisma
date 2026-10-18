@@ -14,15 +14,6 @@ enum Role {
   GESTIONNAIRE
 }
 
-enum ProductCategory {
-  BTP
-  AGRO_CHIMIQUE
-  MATERIAUX_INDUSTRIELS
-  EQUIPEMENTS_MINIERS
-  AUTRES_SERVICES
-  CATALOGUES
-}
-
 enum PublicationType {
   PUBLICATION
   EVENEMENT
@@ -93,16 +84,34 @@ model CustomerResetToken {
   createdAt  DateTime  @default(now())
 }
 
-model Product {
-  id          String          @id @default(cuid())
+// Secteur d'activité (BTP, Agro-chimie…) : géré depuis l'espace entreprise.
+model Sector {
+  id          String   @id @default(cuid())
+  slug        String   @unique
   name        String
-  category    ProductCategory
-  price       Int
-  stock       Int             @default(0)
-  sold        Int             @default(0)
   description String?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  photoUrl    String?
+  icon        String   @default("Package")
+  position    Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products     Product[]
+  realisations Realisation[]
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  sector      Sector   @relation(fields: [sectorId], references: [id], onDelete: Restrict)
+  sectorId    String
+  price       Int
+  stock       Int      @default(0)
+  sold        Int      @default(0)
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   media         ProductMedia[]
   orderItems    OrderItem[]
@@ -204,7 +213,8 @@ model Realisation {
   title       String
   description String
   location    String?
-  category    ProductCategory?
+  sector      Sector?  @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+  sectorId    String?
   photoUrl    String?
   createdAt   DateTime @default(now())
 }

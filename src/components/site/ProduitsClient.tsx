@@ -19,19 +19,15 @@ import {
   X,
 } from "lucide-react";
 import { useCart } from "@/components/site/CartProvider";
-import {
-  CATEGORY_ICON,
-  CATEGORY_LABELS,
-  CATEGORY_TEXT_COLOR,
-  formatFCFA,
-  type MediaItem,
-} from "@/lib/catalog";
-import type { ProductCategory } from "@/generated/prisma/enums";
+import { formatFCFA, type MediaItem } from "@/lib/catalog";
+import { SectorIcon } from "@/components/site/SectorIcon";
 
 export interface ProduitListItem {
   id: string;
   name: string;
-  category: ProductCategory;
+  sectorId: string;
+  sectorName: string;
+  sectorIcon: string;
   price: number;
   stock: number;
   sold: number;
@@ -41,7 +37,13 @@ export interface ProduitListItem {
   media: MediaItem[];
 }
 
-const CATEGORIES = Object.keys(CATEGORY_LABELS) as ProductCategory[];
+export interface ProduitSector {
+  id: string;
+  slug: string;
+  name: string;
+  icon: string;
+}
+
 const PAGE_SIZE = 8;
 const PRICE_STEP = 500;
 
@@ -84,7 +86,6 @@ function ProductCard({ product: p, view }: { product: ProduitListItem; view: "gr
     []
   );
 
-  const Icon = CATEGORY_ICON[p.category];
   const cover = p.media[0];
   const inStock = p.stock > 0;
   const maxQty = Math.max(1, p.stock);
@@ -114,9 +115,9 @@ function ProductCard({ product: p, view }: { product: ProduitListItem; view: "gr
             className="object-cover"
           />
         ) : cover?.type === "VIDEO" ? (
-          <Film size={36} className={CATEGORY_TEXT_COLOR[p.category]} />
+          <Film size={36} className="text-rust" />
         ) : (
-          <Icon size={36} className={CATEGORY_TEXT_COLOR[p.category]} />
+          <SectorIcon name={p.sectorIcon} size={36} className="text-rust" />
         )}
       </div>
       <div className="absolute left-2 top-2 flex flex-col items-start gap-1">
@@ -183,10 +184,8 @@ function ProductCard({ product: p, view }: { product: ProduitListItem; view: "gr
 
   const details = (
     <>
-      <div
-        className={`text-[11px] font-semibold uppercase tracking-wide ${CATEGORY_TEXT_COLOR[p.category]}`}
-      >
-        {CATEGORY_LABELS[p.category]}
+      <div className="text-[11px] font-semibold uppercase tracking-wide text-rust">
+        {p.sectorName}
       </div>
       <Link
         href={`/produits/${p.id}`}
@@ -227,11 +226,13 @@ function ProductCard({ product: p, view }: { product: ProduitListItem; view: "gr
 
 export function ProduitsClient({
   products,
-  initialCategory,
+  sectors,
+  initialSector,
   initialQuery = "",
 }: {
   products: ProduitListItem[];
-  initialCategory?: string;
+  sectors: ProduitSector[];
+  initialSector?: string;
   initialQuery?: string;
 }) {
   const bounds = useMemo(() => {
@@ -243,10 +244,9 @@ export function ProduitsClient({
     };
   }, [products]);
 
-  const [category, setCategory] = useState<ProductCategory | "TOUS">(
-    CATEGORIES.includes(initialCategory as ProductCategory)
-      ? (initialCategory as ProductCategory)
-      : "TOUS"
+  // "TOUS" ou l'identifiant d'un secteur (le slug de l'adresse est converti en identifiant).
+  const [category, setCategory] = useState<string>(
+    sectors.find((s) => s.slug === initialSector)?.id ?? "TOUS"
   );
   const [minPrice, setMinPrice] = useState(bounds.lo);
   const [maxPrice, setMaxPrice] = useState(bounds.hi);
@@ -263,9 +263,9 @@ export function ProduitsClient({
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = { TOUS: products.length };
-    for (const c of CATEGORIES) counts[c] = products.filter((p) => p.category === c).length;
+    for (const s of sectors) counts[s.id] = products.filter((p) => p.sectorId === s.id).length;
     return counts;
-  }, [products]);
+  }, [products, sectors]);
   const inStockCount = products.filter((p) => p.stock > 0).length;
   const outOfStockCount = products.length - inStockCount;
 
@@ -273,7 +273,7 @@ export function ProduitsClient({
     // Aucune case de disponibilité cochée = pas de filtre (on affiche tout).
     const stockFilterActive = showInStock !== showOutOfStock;
     const result = products.filter((p) => {
-      if (category !== "TOUS" && p.category !== category) return false;
+      if (category !== "TOUS" && p.sectorId !== category) return false;
       if (q && !p.name.toLowerCase().includes(q)) return false;
       if (p.price < minPrice || p.price > maxPrice) return false;
       if (stockFilterActive && (p.stock > 0) !== showInStock) return false;
@@ -366,25 +366,22 @@ export function ProduitsClient({
           <fieldset className="mt-4">
             <legend className="font-display font-bold">Catégories</legend>
             <div className="mt-2 flex flex-col gap-1.5">
-              {(["TOUS", ...CATEGORIES] as const).map((c) => {
-                const Icon = c === "TOUS" ? null : CATEGORY_ICON[c];
+              {[{ id: "TOUS", name: "Tous les produits", icon: null }, ...sectors].map((s) => {
                 return (
                   <button
-                    key={c}
+                    key={s.id}
                     type="button"
-                    aria-pressed={category === c}
+                    aria-pressed={category === s.id}
                     onClick={() => {
-                      setCategory(c);
+                      setCategory(s.id);
                       setPage(1);
                     }}
                     className="flex items-center gap-2 py-0.5 text-left text-sm"
                   >
-                    {checkbox(category === c)}
-                    {Icon && <Icon size={14} className="text-ink-soft" />}
-                    <span className={category === c ? "font-semibold" : ""}>
-                      {c === "TOUS" ? "Tous les produits" : CATEGORY_LABELS[c]}
-                    </span>
-                    <span className="text-ink-soft">({categoryCounts[c]})</span>
+                    {checkbox(category === s.id)}
+                    {s.icon && <SectorIcon name={s.icon} size={14} className="text-ink-soft" />}
+                    <span className={category === s.id ? "font-semibold" : ""}>{s.name}</span>
+                    <span className="text-ink-soft">({categoryCounts[s.id]})</span>
                   </button>
                 );
               })}

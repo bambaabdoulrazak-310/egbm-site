@@ -6,6 +6,12 @@ export const metadata: Metadata = { title: "Réalisations — Espace Entreprise"
 export const revalidate = 0;
 
 export default async function AdminRealisationsPage() {
-  const realisations = await prisma.realisation.findMany({ orderBy: { createdAt: "desc" } });
-  return <AdminRealisationsClient realisations={realisations} />;
+  const [realisations, sectors] = await Promise.all([
+    prisma.realisation.findMany({ orderBy: { createdAt: "desc" } }),
+    prisma.sector.findMany({
+      orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+      select: { id: true, name: true },
+    }),
+  ]);
+  return <AdminRealisationsClient realisations={realisations} sectors={sectors} />;
 }
