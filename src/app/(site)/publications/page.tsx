@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import { Calendar } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
-export const metadata: Metadata = { title: "Publications & Événements" };
+export const metadata: Metadata = {
+  title: "Actualités : publications et événements",
+  description:
+    "Suivez l'actualité d'EGBM à Korhogo : nouveautés, annonces et événements pour les professionnels du BTP et de l'agriculture.",
+  alternates: { canonical: "/publications" },
+};
 export const revalidate = 0;
 
 export default async function PublicationsPage() {
@@ -15,6 +20,10 @@ export default async function PublicationsPage() {
       <h1 className="font-display text-3xl font-extrabold md:text-5xl">
         Publications &amp; Événements
       </h1>
+      <p className="mt-3 max-w-2xl leading-relaxed text-ink-soft">
+        Nouveautés, annonces et événements : l&apos;actualité d&apos;EGBM pour les professionnels
+        du BTP et de l&apos;agriculture.
+      </p>
 
       {publications.length === 0 ? (
         <p className="mt-6 text-sm text-ink-soft">Aucune publication pour le moment.</p>

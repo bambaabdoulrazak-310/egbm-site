@@ -2,13 +2,23 @@ import type { Metadata } from "next";
 import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { ContactForm } from "@/components/site/ContactForm";
 
-export const metadata: Metadata = { title: "Contact" };
+export const metadata: Metadata = {
+  title: "Contactez-nous à Korhogo",
+  description:
+    "Contactez EGBM à Korhogo par téléphone, WhatsApp, e-mail ou via le formulaire : une question sur nos produits, une commande ou un projet de chantier.",
+  alternates: { canonical: "/contact" },
+};
 
 export default function ContactPage() {
   return (
     <div>
-      <h1 className="font-display text-3xl font-extrabold md:text-5xl">Contact</h1>
-      <div className="mt-6 grid gap-8 md:grid-cols-2">
+      <h1 className="font-display text-3xl font-extrabold md:text-5xl">Contactez-nous</h1>
+      <p className="mt-3 max-w-2xl leading-relaxed text-ink-soft">
+        Une question sur un produit, une commande à suivre ou un projet de chantier ? Appelez-nous,
+        écrivez-nous sur WhatsApp ou envoyez-nous un message : votre interlocuteur chez EGBM vous
+        répond.
+      </p>
+      <div className="mt-8 grid gap-8 md:grid-cols-2">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-3">
             <MapPin className="text-rust" /> Korhogo, Côte d&apos;Ivoire

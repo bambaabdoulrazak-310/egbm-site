@@ -1,203 +1,377 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Award,
   ArrowRight,
+  ClipboardList,
   Clock,
+  FileText,
+  Handshake,
   HardHat,
   Leaf,
   MapPin,
-  MessageCircle,
   Package,
+  ShieldCheck,
+  Truck,
+  UserCheck,
   Users,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { CATEGORY_ICON, CATEGORY_LABELS, CATEGORY_TEXT_COLOR } from "@/lib/catalog";
+import { COMPANY, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import { JsonLd } from "@/components/site/JsonLd";
 
 export const revalidate = 0;
 
-const SECTORS = [
-  { cat: "BTP", Icon: HardHat, color: "bg-rust", photo: "/btp-chantier.jpg" },
-  { cat: "Agro-chimique", Icon: Leaf, color: "bg-green", photo: "/agrochimie-secteur.webp" },
-  {
-    cat: "Matériaux industriels",
-    Icon: Package,
-    color: "bg-cement",
-    photo: "/materiaux-industriels-secteur.jpg",
-  },
-] as const;
+export const metadata: Metadata = {
+  title: { absolute: "EGBM — Matériaux de construction, agro-chimie et matériaux industriels à Korhogo" },
+  description: SITE_DESCRIPTION,
+  alternates: { canonical: "/" },
+};
 
-const STATS: Array<[string, string]> = [
-  ["3", "secteurs d'activité"],
-  ["9+", "produits référencés"],
-  ["24/7", "livraison chantier"],
+const PROMISES = [
+  { Icon: HardHat, title: "Proximité", desc: "Implantés à Korhogo, au plus près de vos chantiers." },
+  {
+    Icon: ShieldCheck,
+    title: "Qualité",
+    desc: "Des produits sélectionnés avec rigueur pour des résultats durables.",
+  },
+  {
+    Icon: Clock,
+    title: "Disponibilité",
+    desc: "Stock permanent et livraisons rapides sur vos chantiers.",
+  },
+  { Icon: Users, title: "Conseil", desc: "Une équipe expérimentée à votre écoute." },
 ];
 
-const STRENGTHS = [
-  { Icon: MapPin, title: "Proximité", desc: "Implantés à Korhogo, au plus près de vos besoins." },
-  { Icon: Award, title: "Qualité", desc: "Des produits sélectionnés avec rigueur pour des résultats durables." },
-  { Icon: Clock, title: "Disponibilité", desc: "Stock permanent et livraisons rapides sur tous vos chantiers." },
-  { Icon: Users, title: "Conseil", desc: "Une équipe expérimentée à votre écoute pour vous accompagner." },
+const SECTORS = [
+  {
+    code: "BTP",
+    title: "BTP",
+    Icon: HardHat,
+    photo: "/btp-chantier.jpg",
+    alt: "Bâtiment en construction avec grue sur un chantier BTP",
+    desc: "Matériaux de construction, équipements et accompagnement de vos chantiers.",
+  },
+  {
+    code: "AGRO_CHIMIQUE",
+    title: "Agro-chimie",
+    Icon: Leaf,
+    photo: "/agrochimie-secteur.webp",
+    alt: "Semences et engrais déposés dans un champ cultivé",
+    desc: "Semences, engrais et intrants agricoles pour une meilleure productivité.",
+  },
+  {
+    code: "MATERIAUX_INDUSTRIELS",
+    title: "Matériaux industriels",
+    Icon: Package,
+    photo: "/materiaux-industriels-secteur.jpg",
+    alt: "Barres de fer à béton empilées",
+    desc: "Acier, fer, ciment et autres matériaux pour vos projets.",
+  },
+];
+
+const REASONS = [
+  {
+    Icon: UserCheck,
+    title: "Un interlocuteur unique",
+    desc: "Un seul contact, du devis à la livraison, pour gagner du temps.",
+  },
+  {
+    Icon: FileText,
+    title: "Devis et proforma rapides",
+    desc: "Recevez un devis ou une proforma détaillé pour préparer votre budget.",
+  },
+  {
+    Icon: Truck,
+    title: "Livraison sur vos chantiers",
+    desc: "Vos commandes livrées directement sur site, dans la région.",
+  },
+  {
+    Icon: ClipboardList,
+    title: "Suivi de commande en ligne",
+    desc: "Créez votre compte et suivez l'état de vos commandes à tout moment.",
+  },
 ];
 
 export default async function AccueilPage() {
-  const realisations = await prisma.realisation.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 4,
-  });
+  const [realisations, productCount] = await Promise.all([
+    prisma.realisation.findMany({ orderBy: { createdAt: "desc" }, take: 4 }),
+    prisma.product.count(),
+  ]);
+
+  const stats: Array<[string, string]> = [
+    ["3", "secteurs d'activité"],
+    [String(productCount), productCount > 1 ? "produits référencés" : "produit référencé"],
+    ["24/7", "assistance & conseil"],
+  ];
 
   return (
     <div>
-      <div className="relative -mx-5 mb-6 h-[420px] overflow-hidden sm:mx-0 sm:rounded-lg md:h-[480px]">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          name: SITE_NAME,
+          legalName: COMPANY.legalName,
+          alternateName: COMPANY.shortName,
+          url: SITE_URL,
+          logo: `${SITE_URL}/logo.jpg`,
+          image: `${SITE_URL}/logo.jpg`,
+          description: SITE_DESCRIPTION,
+          email: COMPANY.email,
+          telephone: COMPANY.phones,
+          address: {
+            "@type": "PostalAddress",
+            addressLocality: COMPANY.city,
+            addressCountry: COMPANY.country,
+          },
+          areaServed: "Korhogo et sa région",
+          sameAs: [COMPANY.facebookUrl],
+        }}
+      />
+
+      {/* Hero */}
+      <section className="relative isolate overflow-hidden bg-night">
         <Image
           src="/hero-chantier.avif"
-          alt="Chantier EGBM"
+          alt="Chantier de construction en cours à Korhogo"
           fill
           priority
-          className="object-cover"
+          sizes="100vw"
+          className="object-cover object-right"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 to-ink/10" />
-        <div className="relative flex h-full flex-col justify-end px-6 pb-8 sm:px-10 sm:pb-10">
-          <h1 className="font-display text-4xl font-extrabold leading-[0.95] text-white sm:text-5xl md:text-6xl">
-            BÂTIR, CULTIVER,
-            <br />
-            ÉQUIPER LE NORD.
-          </h1>
-          <p className="mt-5 max-w-md text-lg text-white/90">
-            Depuis Korhogo, EGBM fournit matériaux de construction, intrants agro-chimiques et
-            matériaux industriels aux chantiers et exploitations de toute la région.
+        <div className="absolute inset-0 bg-gradient-to-r from-night via-night/85 to-night/55 md:to-night/25" />
+        <div className="relative mx-auto flex min-h-[440px] max-w-6xl flex-col justify-center px-5 py-16 md:min-h-[520px]">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/80">
+            EGBM — Entreprise Générale Bamba Mamadou
           </p>
-          <div className="mt-6 flex flex-wrap gap-3">
+          <h1 className="mt-4 max-w-2xl font-display text-4xl font-bold leading-[1.05] text-white sm:text-5xl md:text-6xl">
+            Votre partenaire de confiance pour vos{" "}
+            <span className="text-rust">projets de construction</span>
+          </h1>
+          <p className="mt-5 max-w-lg text-base leading-relaxed text-white/85 md:text-lg">
+            Matériaux de construction, intrants agricoles et équipements industriels : EGBM
+            accompagne les professionnels du nord de la Côte d&apos;Ivoire, du gros œuvre aux
+            finitions.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              href="/produits"
-              className="flex items-center gap-2 rounded-md bg-rust px-5 py-3 font-semibold text-white"
+              href="/services"
+              className="flex items-center gap-2 rounded-md bg-rust px-6 py-3 font-semibold text-white transition-colors hover:bg-rust-dark"
             >
-              Voir les produits <ArrowRight size={18} />
+              Découvrir nos services <ArrowRight size={18} />
             </Link>
             <Link
-              href="/devis"
-              className="rounded-md border-2 border-white px-5 py-3 font-semibold text-white"
+              href="/contact"
+              className="rounded-md border border-white/80 px-6 py-3 font-semibold text-white transition-colors hover:bg-white hover:text-night"
             >
-              Demander un devis
+              Nous contacter
             </Link>
           </div>
         </div>
-      </div>
-
-      <section className="grid grid-cols-3 gap-2 sm:gap-3">
-        {STATS.map(([n, l]) => (
-          <div
-            key={l}
-            className="rounded-lg border border-border-egbm bg-cream p-2.5 text-center sm:p-4"
-          >
-            <div className="font-display text-xl font-extrabold text-rust sm:text-3xl md:text-4xl">
-              {n}
-            </div>
-            <div className="mt-1 text-[10px] text-ink-soft sm:text-xs">{l}</div>
-          </div>
-        ))}
       </section>
 
-      <section className="mt-16">
-        <h2 className="font-display text-2xl font-bold md:text-3xl">Nos secteurs</h2>
-        <div className="mt-5 grid gap-4 md:grid-cols-3">
-          {SECTORS.map(({ cat, Icon, color, photo }) => (
+      {/* Engagements */}
+      <section className="bg-surface">
+        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-y-8 px-5 py-10 md:grid-cols-4">
+          {PROMISES.map(({ Icon, title, desc }, i) => (
             <div
-              key={cat}
-              className="overflow-hidden rounded-lg border border-border-egbm bg-cream"
+              key={title}
+              className={`px-3 md:px-8 ${i > 0 ? "md:border-l md:border-border-egbm" : "md:pl-0"}`}
             >
-              <div className={`relative flex h-36 items-center justify-center overflow-hidden ${color}`}>
-                <Image src={photo} alt={cat} fill className="object-cover" />
-                <div className="absolute inset-0 bg-ink/30" />
-              </div>
-              <div className="p-4">
-                <Icon className="text-ink-soft" size={24} />
-                <div className="mt-2 font-display text-xl font-bold">{cat}</div>
-              </div>
+              <Icon className="text-rust" size={30} strokeWidth={1.6} />
+              <h2 className="mt-3 font-display text-lg font-bold text-ink">{title}</h2>
+              <p className="mt-1 text-sm leading-relaxed text-ink-soft">{desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="mt-16 -mx-5 bg-ink px-5 py-10 text-bg-alt sm:mx-0 sm:rounded-lg">
-        <h2 className="font-display text-2xl font-bold text-white md:text-3xl">
-          Pourquoi choisir EGBM
-        </h2>
-        <div className="mt-6 grid gap-6 sm:grid-cols-2 md:grid-cols-4">
-          {STRENGTHS.map(({ Icon, title, desc }) => (
-            <div key={title}>
-              <Icon className="text-safety" size={28} />
-              <div className="mt-2 font-display text-lg font-bold text-white">{title}</div>
-              <p className="mt-1 text-sm text-bg-alt/80">{desc}</p>
+      {/* Secteurs */}
+      <section className="mx-auto max-w-6xl px-5 py-16">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <div className="mb-3 h-0.5 w-10 bg-rust" />
+            <h2 className="font-display text-3xl font-bold text-ink md:text-4xl">
+              Nos secteurs d&apos;activité
+            </h2>
+          </div>
+          <Link
+            href="/produits"
+            className="flex items-center gap-1.5 text-sm font-semibold text-rust hover:underline"
+          >
+            Découvrir tous nos secteurs <ArrowRight size={15} />
+          </Link>
+        </div>
+        <div className="mt-8 grid gap-5 md:grid-cols-3">
+          {SECTORS.map(({ code, title, Icon, photo, alt, desc }) => (
+            <article
+              key={code}
+              className="overflow-hidden rounded-lg border border-border-egbm bg-white shadow-sm"
+            >
+              <div className="relative h-48">
+                <Image
+                  src={photo}
+                  alt={alt}
+                  fill
+                  sizes="(min-width: 768px) 33vw, 100vw"
+                  className="object-cover"
+                />
+              </div>
+              <div className="p-5">
+                <div className="flex items-center gap-3">
+                  <Icon className="text-rust" size={26} strokeWidth={1.6} />
+                  <h3 className="font-display text-xl font-bold text-ink">{title}</h3>
+                </div>
+                <p className="mt-3 text-sm leading-relaxed text-ink-soft">{desc}</p>
+                <Link
+                  href={`/produits?categorie=${code}`}
+                  className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-rust hover:underline"
+                >
+                  En savoir plus <ArrowRight size={14} />
+                </Link>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* Pourquoi choisir EGBM */}
+      <section className="relative isolate overflow-hidden bg-night text-white">
+        <Image
+          src="/hero-chantier.avif"
+          alt=""
+          fill
+          sizes="100vw"
+          className="object-cover opacity-10"
+        />
+        <div className="relative mx-auto grid max-w-6xl gap-10 px-5 py-14 lg:grid-cols-[1fr_2.3fr] lg:items-center">
+          <div>
+            <div className="mb-3 h-0.5 w-10 bg-rust" />
+            <h2 className="font-display text-3xl font-bold md:text-4xl">Pourquoi choisir EGBM ?</h2>
+            <p className="mt-4 max-w-sm leading-relaxed text-white/80">
+              Une expertise locale, des produits de qualité et un accompagnement sur mesure pour
+              la réussite de vos projets.
+            </p>
+          </div>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {REASONS.map(({ Icon, title, desc }, i) => (
+              <div
+                key={title}
+                className={`lg:px-5 ${i > 0 ? "lg:border-l lg:border-white/15" : ""}`}
+              >
+                <Icon className="text-rust" size={30} strokeWidth={1.6} />
+                <h3 className="mt-3 font-display text-lg font-bold">{title}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-white/75">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Chiffres */}
+      <section className="bg-white">
+        <div className="mx-auto grid max-w-6xl grid-cols-3 px-5 py-10">
+          {stats.map(([n, label], i) => (
+            <div
+              key={label}
+              className={`px-2 text-center sm:px-6 ${i > 0 ? "border-l border-border-egbm" : ""}`}
+            >
+              <div className="font-display text-3xl font-extrabold text-rust sm:text-5xl">{n}</div>
+              <div className="mt-1 text-xs text-ink-soft sm:text-sm">{label}</div>
             </div>
           ))}
         </div>
       </section>
 
+      {/* Réalisations (gérées depuis l'espace entreprise) */}
       {realisations.length > 0 && (
-        <section className="mt-16">
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-2xl font-bold md:text-3xl">Nos réalisations</h2>
-            <Link href="/realisations" className="text-sm font-semibold text-rust">
-              Voir tout →
+        <section className="mx-auto max-w-6xl px-5 py-16">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <div className="mb-3 h-0.5 w-10 bg-rust" />
+              <h2 className="font-display text-3xl font-bold text-ink md:text-4xl">
+                Nos réalisations
+              </h2>
+            </div>
+            <Link
+              href="/realisations"
+              className="flex items-center gap-1.5 text-sm font-semibold text-rust hover:underline"
+            >
+              Voir toutes nos réalisations <ArrowRight size={15} />
             </Link>
           </div>
-          <div className="mt-5 grid gap-4 md:grid-cols-4">
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 md:grid-cols-4">
             {realisations.map((r) => {
               const Icon = r.category ? CATEGORY_ICON[r.category] : null;
               return (
-                <div
+                <article
                   key={r.id}
-                  className="overflow-hidden rounded-lg border border-border-egbm bg-cream"
+                  className="overflow-hidden rounded-lg border border-border-egbm bg-white shadow-sm"
                 >
-                  <div className="relative flex h-28 items-center justify-center overflow-hidden bg-gradient-to-br from-cement to-ink">
+                  <div className="relative flex h-32 items-center justify-center overflow-hidden bg-gradient-to-br from-cement to-night">
                     {r.photoUrl ? (
-                      <Image src={r.photoUrl} alt={r.title} fill className="object-cover" />
+                      <Image
+                        src={r.photoUrl}
+                        alt={r.title}
+                        fill
+                        sizes="(min-width: 768px) 25vw, 50vw"
+                        className="object-cover"
+                      />
                     ) : Icon ? (
                       <Icon size={32} className="text-white/80" />
                     ) : (
                       <MapPin size={32} className="text-white/80" />
                     )}
                   </div>
-                  <div className="p-3">
+                  <div className="p-4">
                     {r.category && (
-                      <div className={`text-[10px] font-semibold uppercase ${CATEGORY_TEXT_COLOR[r.category]}`}>
+                      <div
+                        className={`text-[10px] font-semibold uppercase tracking-wide ${CATEGORY_TEXT_COLOR[r.category]}`}
+                      >
                         {CATEGORY_LABELS[r.category]}
                       </div>
                     )}
-                    <div className="mt-0.5 font-display font-bold">{r.title}</div>
+                    <h3 className="mt-0.5 font-display font-bold text-ink">{r.title}</h3>
                   </div>
-                </div>
+                </article>
               );
             })}
           </div>
         </section>
       )}
 
-      <section className="mt-16 -mx-5 flex flex-col items-center gap-4 bg-rust px-5 py-8 text-center text-white sm:mx-0 sm:flex-row sm:justify-between sm:rounded-lg sm:text-left">
-        <div>
-          <div className="font-display text-xl font-bold">
-            Besoin de matériaux ou d&apos;un approvisionnement ?
+      {/* Appel à l'action */}
+      <section className="relative isolate overflow-hidden bg-surface">
+        <Image
+          src="/btp-chantier.jpg"
+          alt=""
+          fill
+          sizes="100vw"
+          className="object-cover object-right opacity-30"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-surface via-surface/90 to-surface/10" />
+        <div className="relative mx-auto flex max-w-6xl flex-col items-start gap-6 px-5 py-12 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-5 border-l-2 border-rust pl-5">
+            <Handshake className="hidden shrink-0 text-ink sm:block" size={40} strokeWidth={1.4} />
+            <div>
+              <h2 className="font-display text-2xl font-bold text-ink md:text-3xl">
+                Un besoin pour votre chantier ou votre exploitation ?
+              </h2>
+              <p className="mt-1 text-ink-soft">
+                Notre équipe est à votre écoute pour vous accompagner.
+              </p>
+            </div>
           </div>
-          <p className="mt-1 text-sm text-white/90">
-            Parlons de votre projet, nous sommes là pour vous accompagner.
-          </p>
-        </div>
-        <div className="flex shrink-0 gap-3">
           <a
-            href="https://wa.me/2250556804286"
+            href={COMPANY.whatsappUrl}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-1.5 rounded-md border-2 border-white px-4 py-2.5 font-semibold"
+            className="flex shrink-0 items-center gap-2 rounded-md bg-rust px-6 py-3 font-semibold text-white transition-colors hover:bg-rust-dark"
           >
-            <MessageCircle size={16} /> WhatsApp
+            Parler à notre équipe <ArrowRight size={18} />
           </a>
-          <Link
-            href="/devis"
-            className="flex items-center gap-1.5 rounded-md bg-white px-4 py-2.5 font-semibold text-rust"
-          >
-            Demander un devis
-          </Link>
         </div>
       </section>
     </div>

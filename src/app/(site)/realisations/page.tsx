@@ -4,7 +4,12 @@ import { MapPin } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { CATEGORY_ICON, CATEGORY_LABELS, CATEGORY_TEXT_COLOR } from "@/lib/catalog";
 
-export const metadata: Metadata = { title: "Réalisations" };
+export const metadata: Metadata = {
+  title: "Réalisations : chantiers et fournitures à Korhogo",
+  description:
+    "Découvrez les chantiers, livraisons et fournitures réalisés par EGBM à Korhogo et dans sa région : BTP, agro-chimie et matériaux industriels.",
+  alternates: { canonical: "/realisations" },
+};
 export const revalidate = 0;
 
 export default async function RealisationsPage() {
@@ -14,7 +19,8 @@ export default async function RealisationsPage() {
     <div>
       <h1 className="font-display text-3xl font-extrabold md:text-5xl">Nos réalisations</h1>
       <p className="mt-3 max-w-xl text-ink-soft">
-        Chantiers, livraisons et fournitures menés par EGBM dans la région de Korhogo.
+        Chantiers, livraisons et fournitures menés par EGBM dans la région de Korhogo : un aperçu
+        concret de notre travail pour le BTP, l&apos;agriculture et l&apos;industrie.
       </p>
 
       {realisations.length === 0 ? (

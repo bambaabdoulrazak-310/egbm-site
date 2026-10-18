@@ -8,6 +8,8 @@ import { ProductGallery } from "@/components/site/ProductGallery";
 import { AddToCartButton } from "@/components/site/AddToCartButton";
 import { ProductReviews, type ReviewStatus } from "@/components/site/ProductReviews";
 import { getCustomerSession } from "@/lib/customer-session";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { JsonLd } from "@/components/site/JsonLd";
 
 export const revalidate = 0;
 
@@ -18,6 +20,14 @@ async function getProduct(id: string) {
   });
 }
 
+// Description saisie par l'équipe, sinon un texte de repli factuel.
+function describeProduct(p: NonNullable<Awaited<ReturnType<typeof getProduct>>>) {
+  return (
+    p.description?.trim() ||
+    `${p.name} — ${CATEGORY_LABELS[p.category]} disponible chez EGBM à Korhogo. Prix : ${formatFCFA(p.price)}. Commande en ligne ou demande de devis.`
+  );
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -25,7 +35,21 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const product = await getProduct(id);
-  return { title: product?.name ?? "Produit" };
+  if (!product) return { title: "Produit" };
+
+  const description = describeProduct(product).slice(0, 155);
+  const cover = product.media.find((m) => m.type === "IMAGE");
+  return {
+    title: `${product.name} à Korhogo`,
+    description,
+    alternates: { canonical: `/produits/${id}` },
+    openGraph: {
+      type: "website",
+      title: product.name,
+      description,
+      images: cover ? [{ url: cover.url, alt: product.name }] : undefined,
+    },
+  };
 }
 
 export default async function ProduitDetailPage({
@@ -76,8 +100,39 @@ export default async function ProduitDetailPage({
     }
   }
 
+  const images = product.media.filter((m) => m.type === "IMAGE").map((m) => m.url);
+
   return (
     <div>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: product.name,
+          description: describeProduct(product),
+          category: CATEGORY_LABELS[product.category],
+          ...(images.length > 0 ? { image: images } : {}),
+          offers: {
+            "@type": "Offer",
+            url: `${SITE_URL}/produits/${product.id}`,
+            priceCurrency: "XOF",
+            price: product.price,
+            availability:
+              product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+            seller: { "@type": "Organization", name: SITE_NAME },
+          },
+          // Note moyenne uniquement si des avis publiés existent réellement.
+          ...(aggregate._count > 0 && aggregate._avg.rating
+            ? {
+                aggregateRating: {
+                  "@type": "AggregateRating",
+                  ratingValue: Number(aggregate._avg.rating.toFixed(1)),
+                  reviewCount: aggregate._count,
+                },
+              }
+            : {}),
+        }}
+      />
       <Link href="/produits" className="mb-6 flex items-center gap-1.5 text-sm text-ink-soft hover:text-ink">
         <ArrowLeft size={16} /> Retour aux produits
       </Link>
@@ -94,9 +149,7 @@ export default async function ProduitDetailPage({
           <div className="mt-1 text-sm text-ink-soft">
             {product.stock > 0 ? `${product.stock} en stock` : "Rupture de stock"}
           </div>
-          {product.description && (
-            <p className="mt-4 text-ink-soft">{product.description}</p>
-          )}
+          <p className="mt-4 leading-relaxed text-ink-soft">{describeProduct(product)}</p>
           <AddToCartButton productId={product.id} disabled={product.stock <= 0} />
         </div>
       </div>

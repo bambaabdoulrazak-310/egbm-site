@@ -3,7 +3,10 @@ import { prisma } from "@/lib/prisma";
 import { getCustomerSession } from "@/lib/customer-session";
 import { CommandeClient } from "@/components/site/CommandeClient";
 
-export const metadata: Metadata = { title: "Votre commande" };
+export const metadata: Metadata = {
+  title: "Votre commande",
+  robots: { index: false, follow: true },
+};
 export const revalidate = 0;
 
 export default async function CommandePage() {

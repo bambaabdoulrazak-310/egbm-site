@@ -1,12 +1,21 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/espace-entreprise", "/connexion"],
+      disallow: [
+        "/espace-entreprise",
+        "/connexion",
+        "/mot-de-passe-oublie",
+        "/reinitialiser-mot-de-passe",
+        "/compte",
+        "/commande",
+        "/api",
+      ],
     },
-    sitemap: "https://egbmci.com/sitemap.xml",
+    sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }

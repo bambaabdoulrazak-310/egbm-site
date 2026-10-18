@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import { MessageCircle } from "lucide-react";
 import { QuoteRequestForm } from "@/components/site/QuoteRequestForm";
 
-export const metadata: Metadata = { title: "Demander un devis" };
+export const metadata: Metadata = {
+  title: "Demander un devis : matériaux de construction à Korhogo",
+  description:
+    "Décrivez votre besoin en matériaux de construction, agro-chimie ou matériaux industriels : EGBM vous recontacte rapidement avec un devis adapté.",
+  alternates: { canonical: "/devis" },
+};
 
 export default function DevisPage() {
   return (
@@ -11,6 +16,10 @@ export default function DevisPage() {
       <p className="mt-3 max-w-xl text-ink-soft">
         Décrivez-nous votre besoin (matériaux de construction, intrants agro-chimiques,
         matériaux industriels) et nous vous recontacterons rapidement avec un devis adapté.
+      </p>
+      <p className="mt-2 max-w-xl text-sm text-ink-soft">
+        Pour un devis plus précis, indiquez les produits souhaités, les quantités, le lieu de
+        livraison et le délai voulu.
       </p>
       <div className="mt-6 grid gap-8 md:grid-cols-2">
         <QuoteRequestForm />
