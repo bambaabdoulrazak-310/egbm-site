@@ -228,7 +228,7 @@ export function SectorsCarousel({ sectors }: { sectors: CarouselSector[] }) {
               pauseFor(6000);
             }}
             aria-label="Secteurs précédents"
-            className="absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border-egbm bg-white text-ink shadow-md transition-colors hover:border-rust hover:text-rust md:-left-5"
+            className="absolute left-3 top-20 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border-egbm bg-white text-ink shadow-md transition-colors hover:border-rust hover:text-rust xl:-left-14 xl:top-1/2"
           >
             <ChevronLeft size={20} />
           </button>
@@ -239,7 +239,7 @@ export function SectorsCarousel({ sectors }: { sectors: CarouselSector[] }) {
               pauseFor(6000);
             }}
             aria-label="Secteurs suivants"
-            className="absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border-egbm bg-white text-ink shadow-md transition-colors hover:border-rust hover:text-rust md:-right-5"
+            className="absolute right-3 top-20 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border-egbm bg-white text-ink shadow-md transition-colors hover:border-rust hover:text-rust xl:-right-14 xl:top-1/2"
           >
             <ChevronRight size={20} />
           </button>
