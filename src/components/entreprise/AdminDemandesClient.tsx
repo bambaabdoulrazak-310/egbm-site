@@ -16,6 +16,7 @@ export interface AdminQuoteRequest {
   clientName: string;
   clientPhone: string;
   clientEmail: string | null;
+  clientCompany: string | null;
   message: string;
   createdAt: Date;
 }
@@ -44,6 +45,9 @@ export function AdminDemandesClient({
               >
                 <div>
                   <div className="font-semibold">{q.clientName}</div>
+                  {q.clientCompany && (
+                    <div className="text-sm text-ink-soft">{q.clientCompany}</div>
+                  )}
                   <div className="text-xs text-ink-soft">
                     {q.clientPhone}
                     {q.clientEmail ? ` · ${q.clientEmail}` : ""} ·{" "}

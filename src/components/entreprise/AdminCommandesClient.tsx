@@ -7,6 +7,8 @@ export interface AdminOrder {
   id: string;
   clientName: string;
   clientPhone: string;
+  clientCompany: string | null;
+  message: string | null;
   createdAt: Date;
   status: "NOUVELLE" | "EN_COURS" | "LIVREE";
   total: number;
@@ -42,6 +44,9 @@ export function AdminCommandesClient({ orders }: { orders: AdminOrder[] }) {
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
                 <div className="font-semibold">{c.clientName}</div>
+                {c.clientCompany && (
+                  <div className="text-sm text-ink-soft">{c.clientCompany}</div>
+                )}
                 <div className="text-xs text-ink-soft">
                   {c.clientPhone} · {c.createdAt.toISOString().slice(0, 10)}
                 </div>
@@ -55,6 +60,12 @@ export function AdminCommandesClient({ orders }: { orders: AdminOrder[] }) {
                 </li>
               ))}
             </ul>
+            {c.message && (
+              <div className="mt-2 whitespace-pre-line rounded-md bg-cream p-2.5 text-sm">
+                <span className="font-semibold">Message : </span>
+                {c.message}
+              </div>
+            )}
             <div className="mt-2 font-mono font-semibold">{formatFCFA(c.total)}</div>
           </div>
         ))}
