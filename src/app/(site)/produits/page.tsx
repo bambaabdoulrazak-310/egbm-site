@@ -9,7 +9,7 @@ import { ProduitsClient } from "@/components/site/ProduitsClient";
 export const metadata: Metadata = {
   title: "Produits : matériaux de construction, agro-chimie et fer à Korhogo",
   description:
-    "Catalogue EGBM : ciment, fer à béton, tôles, contreplaqué, engrais et produits agro-chimiques. Prix en FCFA et commande en ligne à Korhogo.",
+    "Catalogue EGBM : ciment, fer à béton, tôles, contreplaqué, engrais et produits agro-chimiques. Demande de devis en ligne à Korhogo.",
   alternates: { canonical: "/produits" },
 };
 export const revalidate = 0;
@@ -35,7 +35,8 @@ export default async function ProduitsPage({
         name: true,
         sectorId: true,
         sector: { select: { name: true, icon: true } },
-        price: true,
+        description: true,
+        unit: true,
         stock: true,
         sold: true,
         createdAt: true,

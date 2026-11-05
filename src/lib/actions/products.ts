@@ -29,6 +29,7 @@ export async function saveProductAction(
   const price = Number(formData.get("price"));
   const stock = Number(formData.get("stock") ?? 0);
   const description = String(formData.get("description") ?? "").trim();
+  const unit = String(formData.get("unit") ?? "").trim().slice(0, 40);
   const mediaRaw = String(formData.get("media") ?? "[]");
 
   if (!name || !Number.isFinite(price) || price <= 0) {
@@ -54,6 +55,7 @@ export async function saveProductAction(
     price: Math.round(price),
     stock: Math.max(0, Math.round(Number.isFinite(stock) ? stock : 0)),
     description: description || null,
+    unit: unit || null,
   };
   const mediaCreate = media.map((m, index) => ({ url: m.url, type: m.type, order: index }));
 

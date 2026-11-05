@@ -34,6 +34,8 @@ export async function notifyNewOrder(order: {
   clientName: string;
   clientPhone: string;
   clientAddress: string | null;
+  clientCompany?: string | null;
+  message?: string | null;
   total: number;
 }) {
   const emails = await getNotifiableEmails();
@@ -43,8 +45,10 @@ export async function notifyNewOrder(order: {
     "Nouvelle commande — EGBM",
     wrap("Nouvelle commande reçue", [
       ["Client", order.clientName],
+      ...(order.clientCompany ? [["Entreprise", order.clientCompany] as [string, string]] : []),
       ["Téléphone", order.clientPhone],
       ["Adresse", order.clientAddress ?? "—"],
+      ...(order.message ? [["Message", order.message] as [string, string]] : []),
       ["Total", `${order.total.toLocaleString("fr-FR")} FCFA`],
     ])
   );
@@ -54,6 +58,7 @@ export async function notifyNewQuoteRequest(quote: {
   clientName: string;
   clientPhone: string;
   clientEmail: string | null;
+  clientCompany?: string | null;
   message: string;
 }) {
   const emails = await getNotifiableEmails();
@@ -63,6 +68,7 @@ export async function notifyNewQuoteRequest(quote: {
     "Nouvelle demande de devis — EGBM",
     wrap("Nouvelle demande de devis", [
       ["Client", quote.clientName],
+      ...(quote.clientCompany ? [["Entreprise", quote.clientCompany] as [string, string]] : []),
       ["Téléphone", quote.clientPhone],
       ["Email", quote.clientEmail ?? "—"],
       ["Besoin", quote.message],

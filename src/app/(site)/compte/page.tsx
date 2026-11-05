@@ -3,7 +3,6 @@ import { LogOut } from "lucide-react";
 import { requireCustomerSession } from "@/lib/customer-auth-guard";
 import { customerLogoutAction } from "@/lib/actions/customer-auth";
 import { prisma } from "@/lib/prisma";
-import { formatFCFA } from "@/lib/catalog";
 
 export const metadata: Metadata = { title: "Mon compte" };
 
@@ -68,7 +67,6 @@ export default async function ComptePage() {
                   </li>
                 ))}
               </ul>
-              <div className="mt-2 font-mono font-semibold">{formatFCFA(o.total)}</div>
             </div>
           ))}
         </div>

@@ -127,6 +127,8 @@ model Product {
   stock       Int      @default(0)
   sold        Int      @default(0)
   description String?
+  // Unité de vente facultative (sac, tonne, barre…), affichée à côté de la quantité.
+  unit        String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -160,6 +162,9 @@ model Order {
   clientName    String
   clientPhone   String
   clientAddress String?
+  // Facultatifs, saisis dans la demande de devis du panier (visibles dans l'e-mail de notification).
+  clientCompany String?
+  message       String?
   customer      Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
   customerId    String?
   total         Int
@@ -241,6 +246,7 @@ model QuoteRequest {
   clientName  String
   clientPhone String
   clientEmail String?
+  clientCompany String?
   message     String
   createdAt   DateTime @default(now())
 }

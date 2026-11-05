@@ -4,14 +4,14 @@ import { getCustomerSession } from "@/lib/customer-session";
 import { CommandeClient } from "@/components/site/CommandeClient";
 
 export const metadata: Metadata = {
-  title: "Votre commande",
+  title: "Votre demande de devis",
   robots: { index: false, follow: true },
 };
 export const revalidate = 0;
 
 export default async function CommandePage() {
   const [products, customerSession] = await Promise.all([
-    prisma.product.findMany({ select: { id: true, name: true, price: true } }),
+    prisma.product.findMany({ select: { id: true, name: true, unit: true } }),
     getCustomerSession(),
   ]);
 
@@ -24,7 +24,7 @@ export default async function CommandePage() {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-extrabold md:text-5xl">Votre commande</h1>
+      <h1 className="font-display text-3xl font-extrabold md:text-5xl">Votre demande de devis</h1>
       <CommandeClient products={products} customer={customer} />
     </div>
   );

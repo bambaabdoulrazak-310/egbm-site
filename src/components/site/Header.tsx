@@ -152,7 +152,7 @@ export function Header() {
             onClick={() => setNavOpen(false)}
             className="rounded-md px-3 py-2.5 text-ink"
           >
-            Ma commande
+            Ma demande de devis
           </Link>
           <Link
             href="/devis"

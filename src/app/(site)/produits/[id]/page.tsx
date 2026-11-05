@@ -3,12 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { formatFCFA } from "@/lib/catalog";
 import { ProductGallery } from "@/components/site/ProductGallery";
 import { AddToCartButton } from "@/components/site/AddToCartButton";
 import { ProductReviews, type ReviewStatus } from "@/components/site/ProductReviews";
 import { getCustomerSession } from "@/lib/customer-session";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { JsonLd } from "@/components/site/JsonLd";
 
 export const revalidate = 0;
@@ -24,7 +22,7 @@ async function getProduct(id: string) {
 function describeProduct(p: NonNullable<Awaited<ReturnType<typeof getProduct>>>) {
   return (
     p.description?.trim() ||
-    `${p.name} — ${p.sector.name} disponible chez EGBM à Korhogo. Prix : ${formatFCFA(p.price)}. Commande en ligne ou demande de devis.`
+    `${p.name} — ${p.sector.name} disponible chez EGBM à Korhogo. Demandez un devis en ligne.`
   );
 }
 
@@ -112,15 +110,6 @@ export default async function ProduitDetailPage({
           description: describeProduct(product),
           category: product.sector.name,
           ...(images.length > 0 ? { image: images } : {}),
-          offers: {
-            "@type": "Offer",
-            url: `${SITE_URL}/produits/${product.id}`,
-            priceCurrency: "XOF",
-            price: product.price,
-            availability:
-              product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-            seller: { "@type": "Organization", name: SITE_NAME },
-          },
           // Note moyenne uniquement si des avis publiés existent réellement.
           ...(aggregate._count > 0 && aggregate._avg.rating
             ? {
@@ -145,12 +134,13 @@ export default async function ProduitDetailPage({
             {product.sector.name}
           </div>
           <h1 className="mt-1 font-display text-3xl font-extrabold md:text-4xl">{product.name}</h1>
-          <div className="mt-3 font-mono text-2xl font-semibold">{formatFCFA(product.price)}</div>
-          <div className="mt-1 text-sm text-ink-soft">
-            {product.stock > 0 ? `${product.stock} en stock` : "Rupture de stock"}
+          <div className="mt-3 text-sm text-ink-soft">
+            {product.stock > 0
+              ? `${product.stock} en stock`
+              : "Rupture de stock : demandez un devis"}
           </div>
           <p className="mt-4 leading-relaxed text-ink-soft">{describeProduct(product)}</p>
-          <AddToCartButton productId={product.id} disabled={product.stock <= 0} />
+          <AddToCartButton productId={product.id} productName={product.name} unit={product.unit} />
         </div>
       </div>
 

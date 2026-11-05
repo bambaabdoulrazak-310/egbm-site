@@ -16,6 +16,7 @@ export interface AdminProduit {
   stock: number;
   sold: number;
   description: string | null;
+  unit: string | null;
   media: MediaItem[];
 }
 
@@ -106,6 +107,13 @@ export function AdminProduitsClient({
             defaultValue={editing?.stock}
             placeholder="Stock"
             className="rounded-md border border-border-egbm p-2"
+          />
+          <input
+            name="unit"
+            defaultValue={editing?.unit ?? ""}
+            placeholder="Unité (optionnel : sac, m², tonne...)"
+            maxLength={40}
+            className="rounded-md border border-border-egbm p-2 md:col-span-2"
           />
           <textarea
             name="description"

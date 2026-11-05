@@ -23,6 +23,9 @@ export async function createOrderAction(
   const nom = String(formData.get("nom") ?? "").trim();
   const tel = String(formData.get("tel") ?? "").trim();
   const adresse = String(formData.get("adresse") ?? "").trim();
+  // Facultatifs : ajoutés à la demande de devis, sans effet sur les règles du formulaire.
+  const entreprise = String(formData.get("entreprise") ?? "").trim().slice(0, 150);
+  const message = String(formData.get("message") ?? "").trim().slice(0, 2000);
   const panierRaw = String(formData.get("panier") ?? "{}");
 
   if (!nom || !tel) {
@@ -69,6 +72,8 @@ export async function createOrderAction(
       clientName: nom,
       clientPhone: tel,
       clientAddress: adresse || null,
+      clientCompany: entreprise || null,
+      message: message || null,
       customerId: customerSession?.sub,
       total,
       status: "NOUVELLE",
@@ -78,7 +83,14 @@ export async function createOrderAction(
 
   after(async () => {
     try {
-      await notifyNewOrder({ clientName: nom, clientPhone: tel, clientAddress: adresse || null, total });
+      await notifyNewOrder({
+        clientName: nom,
+        clientPhone: tel,
+        clientAddress: adresse || null,
+        clientCompany: entreprise || null,
+        message: message || null,
+        total,
+      });
     } catch (err) {
       console.error("Échec de la notification de commande :", err);
     }

@@ -12,14 +12,13 @@ import {
   Film,
   LayoutGrid,
   List,
-  Minus,
-  Plus,
   ShoppingCart,
   SlidersHorizontal,
   X,
 } from "lucide-react";
 import { useCart } from "@/components/site/CartProvider";
-import { formatFCFA, type MediaItem } from "@/lib/catalog";
+import type { MediaItem } from "@/lib/catalog";
+import { QuantityInput } from "@/components/site/QuantityInput";
 import { SectorIcon } from "@/components/site/SectorIcon";
 
 export interface ProduitListItem {
@@ -28,7 +27,8 @@ export interface ProduitListItem {
   sectorId: string;
   sectorName: string;
   sectorIcon: string;
-  price: number;
+  description: string | null;
+  unit: string | null;
   stock: number;
   sold: number;
   createdAt: number;
@@ -45,16 +45,13 @@ export interface ProduitSector {
 }
 
 const PAGE_SIZE = 8;
-const PRICE_STEP = 500;
 
-type SortOption = "populaires" | "recents" | "nom" | "prix-asc" | "prix-desc";
+type SortOption = "populaires" | "recents" | "nom";
 
 const SORT_LABELS: Record<SortOption, string> = {
   populaires: "Plus populaires",
   recents: "Plus récents",
   nom: "Nom (A→Z)",
-  "prix-asc": "Prix croissant",
-  "prix-desc": "Prix décroissant",
 };
 
 function formatNumber(n: number) {
@@ -76,6 +73,7 @@ function pageNumbers(current: number, total: number): Array<number | "…"> {
 function ProductCard({ product: p, view }: { product: ProduitListItem; view: "grid" | "list" }) {
   const { addToCart } = useCart();
   const [qty, setQty] = useState(1);
+  const [resetKey, setResetKey] = useState(0);
   const [added, setAdded] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -88,12 +86,12 @@ function ProductCard({ product: p, view }: { product: ProduitListItem; view: "gr
 
   const cover = p.media[0];
   const inStock = p.stock > 0;
-  const maxQty = Math.max(1, p.stock);
 
   function handleAdd() {
     addToCart(p.id, qty);
     setAdded(true);
     setQty(1);
+    setResetKey((k) => k + 1);
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => setAdded(false), 1500);
   }
@@ -135,47 +133,25 @@ function ProductCard({ product: p, view }: { product: ProduitListItem; view: "gr
     </Link>
   );
 
+  // Quantité souhaitée (saisie libre, sans plafond lié au stock) puis ajout à la demande de devis.
   const actions = (
-    <div className="flex items-center gap-2">
-      <div className="flex shrink-0 items-center rounded-md border border-border-egbm bg-white">
-        <button
-          type="button"
-          onClick={() => setQty((q) => Math.max(1, q - 1))}
-          disabled={!inStock || qty <= 1}
-          aria-label="Diminuer la quantité"
-          className="px-2 py-2 text-ink disabled:opacity-40"
-        >
-          <Minus size={14} />
-        </button>
-        <span className="w-7 text-center text-sm font-semibold" aria-live="polite">
-          {qty}
-        </span>
-        <button
-          type="button"
-          onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
-          disabled={!inStock || qty >= maxQty}
-          aria-label="Augmenter la quantité"
-          className="px-2 py-2 text-ink disabled:opacity-40"
-        >
-          <Plus size={14} />
-        </button>
-      </div>
+    <div className="flex flex-col gap-2">
+      <QuantityInput key={resetKey} value={qty} onChange={setQty} unit={p.unit} label={p.name} />
       <button
         type="button"
         onClick={handleAdd}
-        disabled={!inStock}
-        className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-50 ${
+        className={`flex w-full items-center justify-center gap-1.5 rounded-md px-2 py-2 text-sm font-semibold text-white transition-colors ${
           added ? "bg-green" : "bg-rust hover:bg-rust-dark"
         }`}
       >
         {added ? (
           <>
-            <Check size={15} /> Ajouté
+            <Check size={15} /> Ajouté à la demande
           </>
         ) : (
           <>
             <ShoppingCart size={15} className="shrink-0" />
-            <span className="truncate">Ajouter au panier</span>
+            <span>Ajouter au devis</span>
           </>
         )}
       </button>
@@ -193,10 +169,12 @@ function ProductCard({ product: p, view }: { product: ProduitListItem; view: "gr
       >
         {p.name}
       </Link>
-      <div className="mt-2 font-display text-xl font-bold text-ink">{formatFCFA(p.price)}</div>
+      {p.description && (
+        <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-soft">{p.description}</p>
+      )}
       <div className="mt-1 flex items-center gap-1.5 text-xs text-ink-soft">
         <span className={`h-2 w-2 rounded-full ${inStock ? "bg-green" : "bg-rust-dark"}`} />
-        {inStock ? `En stock (${formatNumber(p.stock)})` : "Rupture de stock"}
+        {inStock ? `En stock (${formatNumber(p.stock)})` : "Rupture de stock : demandez un devis"}
       </div>
     </>
   );
@@ -235,21 +213,10 @@ export function ProduitsClient({
   initialSector?: string;
   initialQuery?: string;
 }) {
-  const bounds = useMemo(() => {
-    if (products.length === 0) return { lo: 0, hi: 0 };
-    const prices = products.map((p) => p.price);
-    return {
-      lo: Math.floor(Math.min(...prices) / PRICE_STEP) * PRICE_STEP,
-      hi: Math.ceil(Math.max(...prices) / PRICE_STEP) * PRICE_STEP,
-    };
-  }, [products]);
-
   // "TOUS" ou l'identifiant d'un secteur (le slug de l'adresse est converti en identifiant).
   const [category, setCategory] = useState<string>(
     sectors.find((s) => s.slug === initialSector)?.id ?? "TOUS"
   );
-  const [minPrice, setMinPrice] = useState(bounds.lo);
-  const [maxPrice, setMaxPrice] = useState(bounds.hi);
   const [showInStock, setShowInStock] = useState(true);
   const [showOutOfStock, setShowOutOfStock] = useState(true);
   const [sort, setSort] = useState<SortOption>("populaires");
@@ -275,34 +242,24 @@ export function ProduitsClient({
     const result = products.filter((p) => {
       if (category !== "TOUS" && p.sectorId !== category) return false;
       if (q && !p.name.toLowerCase().includes(q)) return false;
-      if (p.price < minPrice || p.price > maxPrice) return false;
       if (stockFilterActive && (p.stock > 0) !== showInStock) return false;
       return true;
     });
     return result.sort((a, b) => {
-      if (sort === "prix-asc") return a.price - b.price;
-      if (sort === "prix-desc") return b.price - a.price;
       if (sort === "recents") return b.createdAt - a.createdAt;
       if (sort === "populaires" && b.sold !== a.sold) return b.sold - a.sold;
       return a.name.localeCompare(b.name, "fr");
     });
-  }, [products, category, q, minPrice, maxPrice, showInStock, showOutOfStock, sort]);
+  }, [products, category, q, showInStock, showOutOfStock, sort]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
   const visible = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  const filtersActive =
-    category !== "TOUS" ||
-    minPrice !== bounds.lo ||
-    maxPrice !== bounds.hi ||
-    !showInStock ||
-    !showOutOfStock;
+  const filtersActive = category !== "TOUS" || !showInStock || !showOutOfStock;
 
   function resetFilters() {
     setCategory("TOUS");
-    setMinPrice(bounds.lo);
-    setMaxPrice(bounds.hi);
     setShowInStock(true);
     setShowOutOfStock(true);
     setPage(1);
@@ -312,11 +269,6 @@ export function ProduitsClient({
     setPage(next);
     listTop.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
-
-  const sliderDisabled = bounds.lo === bounds.hi;
-  const span = Math.max(1, bounds.hi - bounds.lo);
-  const leftPct = ((minPrice - bounds.lo) / span) * 100;
-  const rightPct = ((maxPrice - bounds.lo) / span) * 100;
 
   const checkbox = (checked: boolean) => (
     <span
@@ -385,49 +337,6 @@ export function ProduitsClient({
                   </button>
                 );
               })}
-            </div>
-          </fieldset>
-
-          <fieldset className="mt-5 border-t border-border-egbm/70 pt-4">
-            <legend className="font-display font-bold">Prix (FCFA)</legend>
-            <div className="relative mt-4 h-5">
-              <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded bg-border-egbm" />
-              <div
-                className="absolute top-1/2 h-1 -translate-y-1/2 rounded bg-rust"
-                style={{ left: `${leftPct}%`, right: `${100 - rightPct}%` }}
-              />
-              <input
-                type="range"
-                aria-label="Prix minimum"
-                min={bounds.lo}
-                max={bounds.hi}
-                step={PRICE_STEP}
-                value={minPrice}
-                disabled={sliderDisabled}
-                onChange={(e) => {
-                  setMinPrice(Math.min(Number(e.target.value), maxPrice - PRICE_STEP));
-                  setPage(1);
-                }}
-                className="dual-range absolute inset-0 h-5 w-full"
-              />
-              <input
-                type="range"
-                aria-label="Prix maximum"
-                min={bounds.lo}
-                max={bounds.hi}
-                step={PRICE_STEP}
-                value={maxPrice}
-                disabled={sliderDisabled}
-                onChange={(e) => {
-                  setMaxPrice(Math.max(Number(e.target.value), minPrice + PRICE_STEP));
-                  setPage(1);
-                }}
-                className="dual-range absolute inset-0 h-5 w-full"
-              />
-            </div>
-            <div className="mt-2 flex items-center justify-between text-xs text-ink-soft">
-              <span>{formatNumber(minPrice)}</span>
-              <span>{formatNumber(maxPrice)}</span>
             </div>
           </fieldset>
 

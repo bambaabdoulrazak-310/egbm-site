@@ -27,6 +27,12 @@ export function QuoteRequestForm() {
         className="rounded-md border border-border-egbm bg-cream p-3"
       />
       <input
+        name="clientCompany"
+        placeholder="Nom de l'entreprise (optionnel)"
+        autoComplete="organization"
+        className="rounded-md border border-border-egbm bg-cream p-3"
+      />
+      <input
         name="clientPhone"
         required
         placeholder="Téléphone"

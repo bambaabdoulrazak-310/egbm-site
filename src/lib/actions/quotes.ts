@@ -19,6 +19,7 @@ export async function createQuoteRequestAction(
   const clientName = String(formData.get("clientName") ?? "").trim();
   const clientPhone = String(formData.get("clientPhone") ?? "").trim();
   const clientEmail = String(formData.get("clientEmail") ?? "").trim();
+  const clientCompany = String(formData.get("clientCompany") ?? "").trim().slice(0, 150);
   const message = String(formData.get("message") ?? "").trim();
 
   if (!clientName || !clientPhone || !message) {
@@ -30,7 +31,13 @@ export async function createQuoteRequestAction(
   }
 
   await prisma.quoteRequest.create({
-    data: { clientName, clientPhone, clientEmail: clientEmail || null, message },
+    data: {
+      clientName,
+      clientPhone,
+      clientEmail: clientEmail || null,
+      clientCompany: clientCompany || null,
+      message,
+    },
   });
 
   after(async () => {
@@ -39,6 +46,7 @@ export async function createQuoteRequestAction(
         clientName,
         clientPhone,
         clientEmail: clientEmail || null,
+        clientCompany: clientCompany || null,
         message,
       });
     } catch (err) {
