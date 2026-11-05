@@ -54,10 +54,6 @@ const SORT_LABELS: Record<SortOption, string> = {
   nom: "Nom (A→Z)",
 };
 
-function formatNumber(n: number) {
-  return n.toLocaleString("fr-FR");
-}
-
 function pageNumbers(current: number, total: number): Array<number | "…"> {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
   const pages = new Set([1, total, current - 1, current, current + 1]);
@@ -174,7 +170,7 @@ function ProductCard({ product: p, view }: { product: ProduitListItem; view: "gr
       )}
       <div className="mt-1 flex items-center gap-1.5 text-xs text-ink-soft">
         <span className={`h-2 w-2 rounded-full ${inStock ? "bg-green" : "bg-rust-dark"}`} />
-        {inStock ? `En stock (${formatNumber(p.stock)})` : "Rupture de stock : demandez un devis"}
+        {inStock ? "En stock" : "Rupture de stock : demandez un devis"}
       </div>
     </>
   );

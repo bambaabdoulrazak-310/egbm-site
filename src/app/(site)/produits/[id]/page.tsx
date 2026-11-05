@@ -136,7 +136,7 @@ export default async function ProduitDetailPage({
           <h1 className="mt-1 font-display text-3xl font-extrabold md:text-4xl">{product.name}</h1>
           <div className="mt-3 text-sm text-ink-soft">
             {product.stock > 0
-              ? `${product.stock} en stock`
+              ? "En stock"
               : "Rupture de stock : demandez un devis"}
           </div>
           <p className="mt-4 leading-relaxed text-ink-soft">{describeProduct(product)}</p>
