@@ -9,7 +9,7 @@ export const revalidate = 0;
 export default async function DashboardPage() {
   const [caResult, commandesEnAttente, stockResult, topProduits] = await Promise.all([
     prisma.order.aggregate({ _sum: { total: true } }),
-    prisma.order.count({ where: { status: { in: ["NOUVELLE", "EN_COURS"] } } }),
+    prisma.order.count({ where: { status: { in: ["NOUVELLE", "CONFIRMEE", "EN_COURS", "EN_LIVRAISON"] } } }),
     prisma.product.aggregate({ _sum: { stock: true } }),
     prisma.product.findMany({ orderBy: { sold: "desc" }, take: 5 }),
   ]);

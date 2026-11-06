@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { deleteContactMessageAction } from "@/lib/actions/contact";
 import { deleteQuoteRequestAction } from "@/lib/actions/quotes";
@@ -18,6 +19,7 @@ export interface AdminQuoteRequest {
   clientEmail: string | null;
   clientCompany: string | null;
   message: string;
+  convertedOrderId: string | null;
   createdAt: Date;
 }
 
@@ -54,6 +56,23 @@ export function AdminDemandesClient({
                     {q.createdAt.toISOString().slice(0, 10)}
                   </div>
                   <div className="mt-1 text-sm">{q.message}</div>
+                  <div className="mt-2">
+                    {q.convertedOrderId ? (
+                      <Link
+                        href={`/espace-entreprise/commandes/${q.convertedOrderId}`}
+                        className="text-xs font-semibold text-green hover:underline"
+                      >
+                        Convertie en commande — voir la fiche
+                      </Link>
+                    ) : (
+                      <Link
+                        href={`/espace-entreprise/commandes/nouvelle?devis=${q.id}`}
+                        className="text-xs font-semibold text-rust hover:underline"
+                      >
+                        Convertir en commande
+                      </Link>
+                    )}
+                  </div>
                 </div>
                 <form action={deleteQuoteRequestAction}>
                   <input type="hidden" name="id" value={q.id} />

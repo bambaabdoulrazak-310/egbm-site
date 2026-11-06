@@ -19,10 +19,32 @@ enum PublicationType {
   EVENEMENT
 }
 
+// NOUVELLE = en attente de confirmation, EN_COURS = en préparation, LIVREE = terminée.
 enum OrderStatus {
   NOUVELLE
   EN_COURS
   LIVREE
+  CONFIRMEE
+  EN_LIVRAISON
+  ANNULEE
+}
+
+enum OrderSource {
+  SITE
+  MANUELLE
+  DEVIS
+}
+
+enum OrderEventType {
+  CREEE
+  CONFIRMEE
+  PREPARATION
+  EXPEDIEE
+  LIVREE
+  ANNULEE
+  REACTIVEE
+  DATE_MODIFIEE
+  RESPONSABLE_MODIFIE
 }
 
 enum DocumentType {
@@ -37,26 +59,27 @@ enum MediaType {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  name         String
-  email        String   @unique
-  passwordHash String
-  role         Role
-  notifyByEmail Boolean @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  passwordHash  String
+  role          Role
+  notifyByEmail Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  resetTokens PasswordResetToken[]
+  resetTokens       PasswordResetToken[]
+  responsibleOrders Order[]
 }
 
 model PasswordResetToken {
-  id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String    @id @default(cuid())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
-  token     String   @unique
+  token     String    @unique
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 }
 
 model Customer {
@@ -169,15 +192,43 @@ model Order {
   customerId    String?
   total         Int
   status        OrderStatus @default(NOUVELLE)
+  // Suivi des commandes : référence lisible, origine, date prévue et employé responsable.
+  reference     String?     @unique
+  source        OrderSource @default(SITE)
+  expectedDate  DateTime?
+  confirmedAt   DateTime?
+  responsible   User?       @relation(fields: [responsibleId], references: [id], onDelete: SetNull)
+  responsibleId String?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
-  items OrderItem[]
+  items         OrderItem[]
+  events        OrderEvent[]
+  quoteRequests QuoteRequest[]
+}
+
+// Chronologie et historique d'une commande : un enregistrement par événement réel.
+model OrderEvent {
+  id         String         @id @default(cuid())
+  order      Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId    String
+  type       OrderEventType
+  fromStatus OrderStatus?
+  toStatus   OrderStatus?
+  oldDate    DateTime?
+  newDate    DateTime?
+  note       String?
+  authorId   String?
+  authorName String
+  createdAt  DateTime       @default(now())
+
+  @@index([orderId, createdAt])
+  @@index([createdAt])
 }
 
 model OrderItem {
-  id          String  @id @default(cuid())
-  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id          String   @id @default(cuid())
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId     String
   product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
   productId   String?
@@ -193,19 +244,19 @@ model DocumentCounter {
 }
 
 model Document {
-  id             String       @id @default(cuid())
-  number         String       @unique
-  type           DocumentType
-  clientName     String
-  clientContact  String?
-  clientAddress  String?
-  objet          String?
-  vatApplicable  Boolean      @default(true)
-  validityDays   Int?
-  subtotal       Int
-  vat            Int
-  total          Int
-  createdAt      DateTime     @default(now())
+  id            String       @id @default(cuid())
+  number        String       @unique
+  type          DocumentType
+  clientName    String
+  clientContact String?
+  clientAddress String?
+  objet         String?
+  vatApplicable Boolean      @default(true)
+  validityDays  Int?
+  subtotal      Int
+  vat           Int
+  total         Int
+  createdAt     DateTime     @default(now())
 
   lines DocumentLine[]
 }
@@ -242,13 +293,16 @@ model Realisation {
 }
 
 model QuoteRequest {
-  id          String   @id @default(cuid())
-  clientName  String
-  clientPhone String
-  clientEmail String?
-  clientCompany String?
-  message     String
-  createdAt   DateTime @default(now())
+  id               String   @id @default(cuid())
+  clientName       String
+  clientPhone      String
+  clientEmail      String?
+  clientCompany    String?
+  message          String
+  // Renseigné quand la demande a été convertie explicitement en commande.
+  convertedOrder   Order?   @relation(fields: [convertedOrderId], references: [id], onDelete: SetNull)
+  convertedOrderId String?
+  createdAt        DateTime @default(now())
 }
 
 model Review {

@@ -10,12 +10,18 @@ const STATUS_LABELS: Record<string, string> = {
   NOUVELLE: "Nouvelle",
   EN_COURS: "En cours de traitement",
   LIVREE: "Livrée",
+  CONFIRMEE: "Confirmée",
+  EN_LIVRAISON: "En livraison",
+  ANNULEE: "Annulée",
 };
 
 const STATUS_CLASSES: Record<string, string> = {
   NOUVELLE: "bg-safety text-ink",
   EN_COURS: "bg-rust text-white",
   LIVREE: "bg-green text-white",
+  CONFIRMEE: "bg-blue-100 text-blue-900",
+  EN_LIVRAISON: "bg-ink text-white",
+  ANNULEE: "bg-surface text-ink-soft",
 };
 
 export default async function ComptePage() {
