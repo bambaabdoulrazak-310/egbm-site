@@ -8,6 +8,8 @@ import { formatFCFA } from "@/lib/catalog";
 import {
   EVENT_LABELS,
   SOURCE_LABELS,
+  eventLabel,
+  isBackward,
   STATUS_LABELS,
   daysLate,
   formatDateFr,
@@ -146,8 +148,10 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 <li key={e.id} className="relative">
                   <span className="absolute -left-[27px] top-1 h-3 w-3 rounded-full bg-rust" />
                   <div className="font-semibold">
-                    {EVENT_LABELS[e.type]}
-                    {e.toStatus && ["PREPARATION", "EXPEDIEE", "REACTIVEE"].includes(e.type) && (
+                    {eventLabel(e.type, e.fromStatus, e.toStatus)}
+                    {e.toStatus &&
+                      ["PREPARATION", "EXPEDIEE", "REACTIVEE"].includes(e.type) &&
+                      !isBackward(e.fromStatus, e.toStatus) && (
                       <span className="font-normal text-ink-soft"> → {STATUS_LABELS[e.toStatus]}</span>
                     )}
                   </div>

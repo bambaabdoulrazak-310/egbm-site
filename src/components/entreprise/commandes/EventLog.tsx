@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { EVENT_LABELS, STATUS_LABELS, formatDateFr, formatDateTimeFr } from "@/lib/order-workflow";
+import { STATUS_LABELS, eventLabel, formatDateFr, formatDateTimeFr, isBackward } from "@/lib/order-workflow";
 import type { EventRow } from "@/lib/order-list";
 
 // Pour les autres événements, le libellé suffit (ex. « Commande confirmée »).
@@ -16,8 +16,8 @@ export function EventLog({ events }: { events: EventRow[] }) {
         <li key={e.id} className="flex flex-wrap items-start justify-between gap-2 p-3 text-sm">
           <div>
             <div className="font-semibold">
-              {EVENT_LABELS[e.type]}
-              {e.toStatus && SHOW_TARGET.includes(e.type) && (
+              {eventLabel(e.type, e.fromStatus, e.toStatus)}
+              {e.toStatus && SHOW_TARGET.includes(e.type) && !isBackward(e.fromStatus, e.toStatus) && (
                 <span className="font-normal text-ink-soft"> → {STATUS_LABELS[e.toStatus]}</span>
               )}
             </div>

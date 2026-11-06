@@ -201,7 +201,8 @@ export async function changeOrderStatusAction(
     // Garde contre les modifications simultanées : le statut doit être celui que l'on a lu.
     const res = await tx.order.updateMany({
       where: { id, status: order.status },
-      data: { status: to, ...(to === "CONFIRMEE" ? { confirmedAt: new Date() } : {}) },
+      // La date de confirmation n'est posée qu'à la vraie confirmation (pas lors d'un retour en arrière).
+      data: { status: to, ...(to === "CONFIRMEE" && order.status === "NOUVELLE" ? { confirmedAt: new Date() } : {}) },
     });
     if (res.count === 0) return false;
     await tx.orderEvent.create({

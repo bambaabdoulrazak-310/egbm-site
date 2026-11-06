@@ -14,6 +14,7 @@ import {
   NOTE_REQUIRED_FOR,
   STATUS_LABELS,
   TRANSITIONS,
+  isBackward,
   toDateInput,
   type OrderStatusValue,
 } from "@/lib/order-workflow";
@@ -72,10 +73,16 @@ export function StatusPanel({ orderId, status }: { orderId: string; status: Orde
             value={s}
             disabled={pending}
             className={`rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-50 ${
-              NOTE_REQUIRED_FOR.includes(s) ? "border border-rust text-rust" : "bg-rust text-white"
+              NOTE_REQUIRED_FOR.includes(s) || isBackward(status, s)
+                ? "border border-rust text-rust"
+                : "bg-rust text-white"
             }`}
           >
-            {s === "ANNULEE" ? "Annuler la commande" : `→ ${STATUS_LABELS[s]}`}
+            {s === "ANNULEE"
+              ? "Annuler la commande"
+              : isBackward(status, s)
+                ? `← Revenir à « ${STATUS_LABELS[s]} »`
+                : `→ ${STATUS_LABELS[s]}`}
           </button>
         ))}
       </div>

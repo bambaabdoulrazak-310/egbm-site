@@ -68,14 +68,31 @@ export const EVENT_LABELS: Record<OrderEventTypeValue, string> = {
 };
 
 // Transitions autorisées pour un utilisateur autorisé (hors réactivation, réservée à l'administrateur).
+// On peut avancer, annuler, ou revenir d'une étape en cas d'erreur (le retour est enregistré dans la chronologie).
 export const TRANSITIONS: Record<OrderStatusValue, OrderStatusValue[]> = {
   NOUVELLE: ["CONFIRMEE", "ANNULEE"],
   CONFIRMEE: ["EN_COURS", "ANNULEE"],
-  EN_COURS: ["EN_LIVRAISON", "LIVREE", "ANNULEE"],
-  EN_LIVRAISON: ["LIVREE", "ANNULEE"],
+  EN_COURS: ["EN_LIVRAISON", "LIVREE", "CONFIRMEE", "ANNULEE"],
+  EN_LIVRAISON: ["LIVREE", "EN_COURS", "ANNULEE"],
   LIVREE: [],
   ANNULEE: [],
 };
+
+// Ordre du déroulement normal d'une commande (sert à repérer un retour en arrière).
+const STATUS_RANK: Record<OrderStatusValue, number> = {
+  NOUVELLE: 0,
+  CONFIRMEE: 1,
+  EN_COURS: 2,
+  EN_LIVRAISON: 3,
+  LIVREE: 4,
+  ANNULEE: 5,
+};
+
+// Retour à une étape précédente (ex. « En livraison » → « En préparation »).
+export function isBackward(from: OrderStatusValue | null, to: OrderStatusValue | null): boolean {
+  if (!from || !to || to === "ANNULEE" || from === "ANNULEE") return false;
+  return STATUS_RANK[to] < STATUS_RANK[from];
+}
 
 // Statut vers lequel repart une commande réactivée par l'administrateur.
 export const REACTIVATION_TARGET: OrderStatusValue = "CONFIRMEE";
@@ -91,6 +108,18 @@ export const EVENT_FOR_STATUS: Record<OrderStatusValue, OrderEventTypeValue> = {
 };
 
 // Une justification est exigée pour annuler (et pour réactiver, voir l'action serveur).
+// Libellé d'un événement de la chronologie (un retour en arrière n'est pas présenté comme une avancée).
+export function eventLabel(
+  type: OrderEventTypeValue,
+  from: OrderStatusValue | null,
+  to: OrderStatusValue | null
+): string {
+  if (type !== "REACTIVEE" && isBackward(from, to) && to) {
+    return `Retour au statut « ${STATUS_LABELS[to]} »`;
+  }
+  return EVENT_LABELS[type];
+}
+
 export const NOTE_REQUIRED_FOR: OrderStatusValue[] = ["ANNULEE"];
 
 export function isTerminal(status: OrderStatusValue): boolean {
