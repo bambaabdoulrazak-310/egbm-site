@@ -9,6 +9,13 @@ import {
   parseFilters,
 } from "@/lib/order-list";
 import { formatDateFr } from "@/lib/order-workflow";
+import { getSupplierHistory, getSupplierOrders, getSupplierStats } from "@/lib/supplier-list";
+import { getDeliveries, getDeliveryStats } from "@/lib/delivery-list";
+import {
+  DeliveriesTable,
+  StatCards,
+  SupplierOrdersTable,
+} from "@/components/entreprise/commandes/SupplierTables";
 import { OrderSummaryCards } from "@/components/entreprise/commandes/OrderSummaryCards";
 import { OrderFilters } from "@/components/entreprise/commandes/OrderFilters";
 import { OrdersTable } from "@/components/entreprise/commandes/OrdersTable";
@@ -41,23 +48,38 @@ export default async function AdminCommandesPage({
 
   // « À confirmer » : demandes du site pas encore confirmées (affichées seulement avec le statut par défaut).
   const showToConfirm = tab === "clients" && !filters.retard && filters.statut === "actives";
-  const [toConfirm, clientOrders, history] = await Promise.all([
-    showToConfirm ? getOrdersToConfirm(filters) : Promise.resolve([]),
-    tab === "clients" ? getClientOrders(filters) : Promise.resolve([]),
-    tab === "historique" ? getHistory(filters) : Promise.resolve(null),
-  ]);
+  const [toConfirm, clientOrders, history, supplierOrders, supplierStats, supplierHistory, deliveries, deliveryStats] =
+    await Promise.all([
+      showToConfirm ? getOrdersToConfirm(filters) : Promise.resolve([]),
+      tab === "clients" ? getClientOrders(filters) : Promise.resolve([]),
+      tab === "historique" ? getHistory(filters) : Promise.resolve(null),
+      tab === "fournisseurs" ? getSupplierOrders(filters) : Promise.resolve([]),
+      tab === "fournisseurs" ? getSupplierStats() : Promise.resolve(null),
+      tab === "historique" ? getSupplierHistory(filters) : Promise.resolve([]),
+      tab === "livraisons" ? getDeliveries(filters) : Promise.resolve([]),
+      tab === "livraisons" ? getDeliveryStats() : Promise.resolve(null),
+    ]);
 
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-2xl font-extrabold md:text-4xl">Suivi des commandes</h1>
-        <Link
-          href="/espace-entreprise/commandes/nouvelle"
-          className="flex items-center gap-1.5 rounded-md bg-rust px-4 py-2 font-semibold text-white hover:bg-rust-dark"
-        >
-          <Plus size={16} /> Nouvelle commande
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/espace-entreprise/commandes/fournisseurs/nouvelle"
+            className="flex items-center gap-1.5 rounded-md border border-rust px-4 py-2 font-semibold text-rust hover:bg-rust/10"
+          >
+            <Plus size={16} /> Commande fournisseur
+          </Link>
+          <Link
+            href="/espace-entreprise/commandes/nouvelle"
+            className="flex items-center gap-1.5 rounded-md bg-rust px-4 py-2 font-semibold text-white hover:bg-rust-dark"
+          >
+            <Plus size={16} /> Nouvelle commande
+          </Link>
+        </div>
       </div>
+      <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-ink-soft">Commandes clients</p>
 
       {/* La clé force la mise à jour immédiate des indicateurs après une action (le polling couvre le reste). */}
       <OrderSummaryCards key={JSON.stringify(summary)} initial={summary} />
@@ -130,6 +152,11 @@ export default async function AdminCommandesPage({
           <OrderFilters tab={tab} filters={filters} />
           <h2 className="mt-5 font-display text-xl font-bold">Commandes terminées ou annulées</h2>
           <OrdersTable rows={history.orders} empty="Aucune commande terminée ou annulée pour le moment." />
+          <h2 className="mt-8 font-display text-xl font-bold">Commandes fournisseurs reçues ou annulées</h2>
+          <SupplierOrdersTable
+            rows={supplierHistory}
+            empty="Aucune commande fournisseur reçue ou annulée pour le moment."
+          />
           <h2 className="mt-8 font-display text-xl font-bold">Journal des modifications</h2>
           <p className="text-xs text-ink-soft">
             Les 100 derniers événements enregistrés. Les commandes antérieures au suivi n&apos;ont pas
@@ -139,15 +166,50 @@ export default async function AdminCommandesPage({
         </section>
       )}
 
-      {(tab === "fournisseurs" || tab === "livraisons") && (
-        <section className="mt-5 rounded-lg border border-border-egbm bg-white p-6 shadow-sm">
-          <h2 className="font-display text-xl font-bold">
-            {tab === "fournisseurs" ? "Commandes fournisseurs" : "Livraisons"}
-          </h2>
-          <p className="mt-2 text-sm text-ink-soft">
-            Cette section sera disponible prochainement (phase 2). Aucune donnée n&apos;est affichée tant que
-            le module n&apos;est pas en service.
-          </p>
+      {tab === "fournisseurs" && supplierStats && (
+        <section>
+          <StatCards
+            items={[
+              { label: "Fournisseurs en cours", value: supplierStats.enCours },
+              { label: "Brouillons à envoyer", value: supplierStats.aEnvoyer },
+              { label: "En attente de réception", value: supplierStats.attenteReception },
+              { label: "Reçues partiellement", value: supplierStats.partielles },
+              { label: "En retard", value: supplierStats.enRetard, alert: true, href: "?onglet=fournisseurs&retard=1" },
+              { label: "Reçues", value: supplierStats.recues },
+            ]}
+          />
+          <OrderFilters tab={tab} filters={filters} />
+          <SupplierOrdersTable
+            rows={supplierOrders}
+            empty={
+              filters.retard
+                ? "Aucune commande fournisseur en retard."
+                : "Aucune commande fournisseur ne correspond à ces critères."
+            }
+          />
+        </section>
+      )}
+
+      {tab === "livraisons" && deliveryStats && (
+        <section>
+          <StatCards
+            items={[
+              { label: "Livraisons prévues", value: deliveryStats.prevues, href: "?onglet=livraisons&statut=PREVUE" },
+              { label: "En cours", value: deliveryStats.enCours, href: "?onglet=livraisons&statut=EN_COURS" },
+              { label: "Partielles", value: deliveryStats.partielles, href: "?onglet=livraisons&statut=PARTIELLE" },
+              { label: "Terminées", value: deliveryStats.terminees, href: "?onglet=livraisons&statut=EFFECTUEE" },
+              { label: "En retard", value: deliveryStats.enRetard, alert: true, href: "?onglet=livraisons&retard=1" },
+            ]}
+          />
+          <OrderFilters tab={tab} filters={filters} />
+          <DeliveriesTable
+            rows={deliveries}
+            empty={
+              filters.retard
+                ? "Aucune livraison en retard."
+                : "Aucune livraison ne correspond à ces critères. Les livraisons se prévoient depuis la fiche d'une commande."
+            }
+          />
         </section>
       )}
     </div>

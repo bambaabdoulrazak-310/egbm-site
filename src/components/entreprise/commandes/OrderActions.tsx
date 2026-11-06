@@ -21,18 +21,21 @@ import {
 
 const initial: OrderActionState = {};
 
-const field = "w-full rounded-md border border-border-egbm bg-white p-2 text-sm";
-const panel = "rounded-lg border border-border-egbm bg-white p-4 shadow-sm";
+export const field = "w-full rounded-md border border-border-egbm bg-white p-2 text-sm";
+export const panel = "rounded-lg border border-border-egbm bg-white p-4 shadow-sm";
+
+// Même forme pour les commandes clients et fournisseurs : ces panneaux servent aux deux.
+type PanelAction = (prev: OrderActionState, formData: FormData) => Promise<OrderActionState>;
 
 // Après une action réussie, on recharge les données de la page (statut, chronologie, boutons proposés).
-function useRefreshOnSuccess(state: OrderActionState) {
+export function useRefreshOnSuccess(state: OrderActionState) {
   const router = useRouter();
   useEffect(() => {
     if (state.success) router.refresh();
   }, [state, router]);
 }
 
-function Feedback({ state }: { state: OrderActionState }) {
+export function Feedback({ state }: { state: OrderActionState }) {
   useRefreshOnSuccess(state);
   if (state.error) {
     return (
@@ -92,8 +95,18 @@ export function StatusPanel({ orderId, status }: { orderId: string; status: Orde
 }
 
 // Commande terminée ou annulée : réactivation réservée à l'administrateur, avec justification.
-export function ReactivatePanel({ orderId, isAdmin }: { orderId: string; isAdmin: boolean }) {
-  const [state, formAction, pending] = useActionState(reactivateOrderAction, initial);
+export function ReactivatePanel({
+  orderId,
+  isAdmin,
+  action,
+  target = "Confirmée",
+}: {
+  orderId: string;
+  isAdmin: boolean;
+  action?: PanelAction;
+  target?: string;
+}) {
+  const [state, formAction, pending] = useActionState(action ?? reactivateOrderAction, initial);
 
   if (!isAdmin) {
     return (
@@ -121,7 +134,7 @@ export function ReactivatePanel({ orderId, isAdmin }: { orderId: string; isAdmin
         disabled={pending}
         className="self-start rounded-md border border-rust px-4 py-2 text-sm font-semibold text-rust disabled:opacity-50"
       >
-        Réactiver (retour à « Confirmée »)
+        Réactiver (retour à « {target} »)
       </button>
       <Feedback state={state} />
     </form>
@@ -131,11 +144,13 @@ export function ReactivatePanel({ orderId, isAdmin }: { orderId: string; isAdmin
 export function DatePanel({
   orderId,
   expectedDate,
+  action,
 }: {
   orderId: string;
   expectedDate: Date | null;
+  action?: PanelAction;
 }) {
-  const [state, formAction, pending] = useActionState(updateExpectedDateAction, initial);
+  const [state, formAction, pending] = useActionState(action ?? updateExpectedDateAction, initial);
 
   return (
     <form action={formAction} className={`${panel} flex flex-col gap-3`}>
@@ -175,12 +190,14 @@ export function ResponsiblePanel({
   orderId,
   responsibleId,
   users,
+  action,
 }: {
   orderId: string;
   responsibleId: string | null;
   users: Array<{ id: string; name: string }>;
+  action?: PanelAction;
 }) {
-  const [state, formAction, pending] = useActionState(assignResponsibleAction, initial);
+  const [state, formAction, pending] = useActionState(action ?? assignResponsibleAction, initial);
 
   return (
     <form action={formAction} className={`${panel} flex flex-col gap-3`}>

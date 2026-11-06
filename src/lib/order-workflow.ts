@@ -12,6 +12,10 @@ export type OrderStatusValue =
 export type OrderSourceValue = "SITE" | "MANUELLE" | "DEVIS";
 
 export type OrderEventTypeValue =
+  | "ENVOYEE"
+  | "LIVRAISON_PARTIELLE"
+  | "RECEPTION_PARTIELLE"
+  | "RECEPTION"
   | "CREEE"
   | "CONFIRMEE"
   | "PREPARATION"
@@ -56,6 +60,10 @@ export const SOURCE_LABELS: Record<OrderSourceValue, string> = {
 };
 
 export const EVENT_LABELS: Record<OrderEventTypeValue, string> = {
+  ENVOYEE: "Commande envoyée au fournisseur",
+  LIVRAISON_PARTIELLE: "Livraison partielle",
+  RECEPTION_PARTIELLE: "Réception partielle",
+  RECEPTION: "Réception complète",
   CREEE: "Commande créée",
   CONFIRMEE: "Commande confirmée",
   PREPARATION: "Préparation commencée",
@@ -112,8 +120,11 @@ export const EVENT_FOR_STATUS: Record<OrderStatusValue, OrderEventTypeValue> = {
 export function eventLabel(
   type: OrderEventTypeValue,
   from: OrderStatusValue | null,
-  to: OrderStatusValue | null
+  to: OrderStatusValue | null,
+  detail?: string | null
 ): string {
+  // Commandes fournisseurs : un retour d'étape est décrit par le texte système de l'événement.
+  if (detail?.startsWith("Retour")) return detail;
   if (type !== "REACTIVEE" && isBackward(from, to) && to) {
     return `Retour au statut « ${STATUS_LABELS[to]} »`;
   }

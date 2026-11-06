@@ -2,7 +2,8 @@
 
 import { useActionState, useEffect, useState } from "react";
 import Image from "next/image";
-import { Film, Pencil, Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { Film, History, Pencil, Plus, Trash2 } from "lucide-react";
 import { formatFCFA, type MediaItem } from "@/lib/catalog";
 import { saveProductAction, deleteProductAction, type ProductFormState } from "@/lib/actions/products";
 import { MediaUploader } from "@/components/entreprise/MediaUploader";
@@ -185,6 +186,13 @@ export function AdminProduitsClient({
                       <button onClick={() => startEdit(p)} aria-label="Modifier">
                         <Pencil size={16} className="text-cement" />
                       </button>
+                      <Link
+                        href={`/espace-entreprise/produits/${p.id}`}
+                        aria-label="Historique du stock"
+                        title="Historique du stock"
+                      >
+                        <History size={16} className="text-cement" />
+                      </Link>
                       <form action={deleteProductAction}>
                         <input type="hidden" name="id" value={p.id} />
                         <button type="submit" aria-label="Supprimer">

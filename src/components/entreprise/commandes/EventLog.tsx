@@ -16,13 +16,13 @@ export function EventLog({ events }: { events: EventRow[] }) {
         <li key={e.id} className="flex flex-wrap items-start justify-between gap-2 p-3 text-sm">
           <div>
             <div className="font-semibold">
-              {eventLabel(e.type, e.fromStatus, e.toStatus)}
+              {eventLabel(e.type, e.fromStatus, e.toStatus, e.detail)}
               {e.toStatus && SHOW_TARGET.includes(e.type) && !isBackward(e.fromStatus, e.toStatus) && (
                 <span className="font-normal text-ink-soft"> → {STATUS_LABELS[e.toStatus]}</span>
               )}
             </div>
             <div className="text-xs text-ink-soft">
-              <Link href={`/espace-entreprise/commandes/${e.orderId}`} className="font-mono text-rust hover:underline">
+              <Link href={e.href} className="font-mono text-rust hover:underline">
                 {e.orderReference ?? "Commande"}
               </Link>{" "}
               · {e.clientName} · par {e.authorName}

@@ -35,7 +35,35 @@ enum OrderSource {
   DEVIS
 }
 
+enum SupplierOrderStatus {
+  BROUILLON
+  ENVOYEE
+  CONFIRMEE
+  EXPEDIEE
+  RECUE_PARTIELLEMENT
+  RECUE
+  ANNULEE
+}
+
+enum DeliveryStatus {
+  PREVUE
+  EN_COURS
+  EFFECTUEE
+  ANNULEE
+}
+
+enum StockMovementType {
+  LIVRAISON
+  RECEPTION
+  ANNULATION_LIVRAISON
+  REGULARISATION
+}
+
 enum OrderEventType {
+  ENVOYEE
+  LIVRAISON_PARTIELLE
+  RECEPTION_PARTIELLE
+  RECEPTION
   CREEE
   CONFIRMEE
   PREPARATION
@@ -70,6 +98,7 @@ model User {
 
   resetTokens       PasswordResetToken[]
   responsibleOrders Order[]
+  supplierOrders    SupplierOrder[]
 }
 
 model PasswordResetToken {
@@ -155,10 +184,12 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  media         ProductMedia[]
-  orderItems    OrderItem[]
-  documentLines DocumentLine[]
-  reviews       Review[]
+  media          ProductMedia[]
+  orderItems     OrderItem[]
+  supplierItems  SupplierOrderItem[]
+  stockMovements StockMovement[]
+  documentLines  DocumentLine[]
+  reviews        Review[]
 }
 
 model ProductMedia {
@@ -204,24 +235,139 @@ model Order {
 
   items         OrderItem[]
   events        OrderEvent[]
+  deliveries    Delivery[]
   quoteRequests QuoteRequest[]
+}
+
+// Livraison (totale ou partielle) d'une commande client : seules les livraisons « effectuées » font bouger le stock.
+model Delivery {
+  id          String         @id @default(cuid())
+  order       Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId     String
+  plannedDate DateTime?
+  status      DeliveryStatus @default(PREVUE)
+  deliveredAt DateTime?
+  note        String?
+  authorId    String?
+  authorName  String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  lines DeliveryLine[]
+
+  @@index([orderId])
+  @@index([status, plannedDate])
+}
+
+model DeliveryLine {
+  id          String    @id @default(cuid())
+  delivery    Delivery  @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  deliveryId  String
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  orderItemId String
+  quantity    Int
+
+  movements StockMovement[]
+}
+
+// Commande d'approvisionnement auprès d'un fournisseur (nom saisi librement).
+model SupplierOrder {
+  id              String              @id @default(cuid())
+  reference       String              @unique
+  supplierName    String
+  supplierContact String?
+  status          SupplierOrderStatus @default(BROUILLON)
+  expectedDate    DateTime?
+  notes           String?
+  responsible     User?               @relation(fields: [responsibleId], references: [id], onDelete: SetNull)
+  responsibleId   String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  items    SupplierOrderItem[]
+  events   OrderEvent[]
+  receipts SupplierReceipt[]
+}
+
+model SupplierOrderItem {
+  id              String        @id @default(cuid())
+  supplierOrder   SupplierOrder @relation(fields: [supplierOrderId], references: [id], onDelete: Cascade)
+  supplierOrderId String
+  product         Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId       String?
+  productName     String
+  quantity        Int
+  receivedQty     Int           @default(0)
+
+  receiptLines SupplierReceiptLine[]
+}
+
+// Réception (totale ou partielle) de marchandises : chaque ligne fait entrer du stock une seule fois.
+model SupplierReceipt {
+  id              String        @id @default(cuid())
+  supplierOrder   SupplierOrder @relation(fields: [supplierOrderId], references: [id], onDelete: Cascade)
+  supplierOrderId String
+  note            String?
+  authorId        String?
+  authorName      String
+  receivedAt      DateTime      @default(now())
+
+  lines SupplierReceiptLine[]
+}
+
+model SupplierReceiptLine {
+  id        String            @id @default(cuid())
+  receipt   SupplierReceipt   @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  receiptId String
+  item      SupplierOrderItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId    String
+  quantity  Int
+
+  movements StockMovement[]
+}
+
+// Historique de stock d'un produit. Les contraintes d'unicité empêchent de compter deux fois la même ligne.
+model StockMovement {
+  id             String               @id @default(cuid())
+  product        Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId      String
+  type           StockMovementType
+  quantity       Int
+  deliveryLine   DeliveryLine?        @relation(fields: [deliveryLineId], references: [id], onDelete: SetNull)
+  deliveryLineId String?
+  receiptLine    SupplierReceiptLine? @relation(fields: [receiptLineId], references: [id], onDelete: SetNull)
+  receiptLineId  String?
+  reference      String?
+  note           String?
+  authorId       String?
+  authorName     String
+  createdAt      DateTime             @default(now())
+
+  @@unique([deliveryLineId, type])
+  @@unique([receiptLineId, type])
+  @@index([productId, createdAt])
 }
 
 // Chronologie et historique d'une commande : un enregistrement par événement réel.
 model OrderEvent {
-  id         String         @id @default(cuid())
-  order      Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId    String
-  type       OrderEventType
-  fromStatus OrderStatus?
-  toStatus   OrderStatus?
-  oldDate    DateTime?
-  newDate    DateTime?
-  note       String?
-  authorId   String?
-  authorName String
-  createdAt  DateTime       @default(now())
+  id              String         @id @default(cuid())
+  order           Order?         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId         String?
+  supplierOrder   SupplierOrder? @relation(fields: [supplierOrderId], references: [id], onDelete: Cascade)
+  supplierOrderId String?
+  type            OrderEventType
+  fromStatus      OrderStatus?
+  toStatus        OrderStatus?
+  oldDate         DateTime?
+  newDate         DateTime?
+  note            String?
+  // Description système de l'événement (ex. « Livraison de 2 lignes »), distincte de l'observation du personnel.
+  detail          String?
+  authorId        String?
+  authorName      String
+  createdAt       DateTime       @default(now())
 
+  @@index([supplierOrderId, createdAt])
   @@index([orderId, createdAt])
   @@index([createdAt])
 }
@@ -235,6 +381,8 @@ model OrderItem {
   productName String
   quantity    Int
   unitPrice   Int
+
+  deliveryLines DeliveryLine[]
 }
 
 // Compteur transactionnel pour la numérotation des documents (ex: id = "FACTURE-2026")

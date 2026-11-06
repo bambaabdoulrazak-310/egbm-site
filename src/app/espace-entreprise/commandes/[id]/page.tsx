@@ -23,6 +23,7 @@ import {
   ResponsiblePanel,
   StatusPanel,
 } from "@/components/entreprise/commandes/OrderActions";
+import { DeliveryPanel } from "@/components/entreprise/commandes/DeliveryPanel";
 
 export const metadata: Metadata = { title: "Fiche commande — Espace Entreprise" };
 export const revalidate = 0;
@@ -38,6 +39,10 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         items: true,
         responsible: { select: { id: true, name: true } },
         events: { orderBy: { createdAt: "asc" } },
+        deliveries: {
+          orderBy: { createdAt: "asc" },
+          include: { lines: { include: { orderItem: { select: { productName: true } } } } },
+        },
       },
     }),
     prisma.user.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
@@ -49,6 +54,28 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const hasCreationEvent = order.events.some((e) => e.type === "CREEE");
   const hasStatusEvent = order.events.some((e) => e.toStatus && e.type !== "CREEE");
   const legacyGap = order.status !== "NOUVELLE" && !hasStatusEvent;
+
+  // Quantités livrées (livraisons effectuées) et déjà prévues (livraisons ouvertes) par ligne.
+  const qtyBy = (statuses: string[]) => {
+    const m = new Map<string, number>();
+    for (const d of order.deliveries) {
+      if (!statuses.includes(d.status)) continue;
+      for (const l of d.lines) m.set(l.orderItemId, (m.get(l.orderItemId) ?? 0) + l.quantity);
+    }
+    return m;
+  };
+  const deliveredMap = qtyBy(["EFFECTUEE"]);
+  const plannedMap = qtyBy(["PREVUE", "EN_COURS"]);
+  const deliveryItems = order.items.map((it) => ({
+    id: it.id,
+    name: it.productName,
+    ordered: it.quantity,
+    delivered: deliveredMap.get(it.id) ?? 0,
+    planned: plannedMap.get(it.id) ?? 0,
+  }));
+  const showDeliveries =
+    order.status !== "NOUVELLE" && (order.status !== "ANNULEE" || order.deliveries.length > 0);
+  const canPlan = ["CONFIRMEE", "EN_COURS", "EN_LIVRAISON"].includes(order.status);
 
   return (
     <div>
@@ -132,6 +159,24 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             </div>
           </section>
 
+          {showDeliveries && (
+            <DeliveryPanel
+              orderId={order.id}
+              items={deliveryItems}
+              canPlan={canPlan}
+              deliveries={order.deliveries.map((d) => ({
+                id: d.id,
+                status: d.status,
+                plannedDate: d.plannedDate,
+                deliveredAt: d.deliveredAt,
+                note: d.note,
+                authorName: d.authorName,
+                createdAt: d.createdAt,
+                lines: d.lines.map((l) => ({ name: l.orderItem.productName, quantity: l.quantity })),
+              }))}
+            />
+          )}
+
           <section className="rounded-lg border border-border-egbm bg-white p-4 shadow-sm">
             <h2 className="font-display text-lg font-bold">Chronologie</h2>
             <ol className="mt-3 space-y-4 border-l-2 border-border-egbm pl-5">
@@ -158,6 +203,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                   <div className="text-xs text-ink-soft">
                     {formatDateTimeFr(e.createdAt)} · {e.authorName}
                   </div>
+                  {e.detail && (
+                    <div className="text-xs text-ink-soft">{e.detail}</div>
+                  )}
                   {e.type === "DATE_MODIFIEE" && (
                     <div className="text-xs text-ink-soft">
                       Ancienne date : {formatDateFr(e.oldDate)} → nouvelle date : {formatDateFr(e.newDate)}

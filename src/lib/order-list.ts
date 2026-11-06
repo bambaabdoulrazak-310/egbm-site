@@ -1,6 +1,7 @@
 import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { supplierBaseWhere } from "@/lib/supplier-list";
 import {
   daysLate,
   isStatus,
@@ -41,11 +42,13 @@ export interface EventRow {
   fromStatus: OrderStatusValue | null;
   toStatus: OrderStatusValue | null;
   note: string | null;
+  detail: string | null;
   authorName: string;
   createdAt: Date;
   oldDate: Date | null;
   newDate: Date | null;
-  orderId: string;
+  // Lien vers la fiche concernée : commande client ou commande fournisseur.
+  href: string;
   orderReference: string | null;
   clientName: string;
 }
@@ -183,8 +186,14 @@ export async function getHistory(f: OrderFilters): Promise<{ orders: OrderRow[];
       take: LIMIT,
     }),
     prisma.orderEvent.findMany({
-      where: { order: { is: where } },
-      include: { order: { select: { reference: true, clientName: true } } },
+      // Événements des commandes clients, et des commandes fournisseurs (sauf si un type client est filtré).
+      where: f.type
+        ? { order: { is: where } }
+        : { OR: [{ order: { is: where } }, { supplierOrder: { is: supplierBaseWhere(f) } }] },
+      include: {
+        order: { select: { reference: true, clientName: true } },
+        supplierOrder: { select: { reference: true, supplierName: true } },
+      },
       orderBy: { createdAt: "desc" },
       take: 100,
     }),
@@ -198,13 +207,16 @@ export async function getHistory(f: OrderFilters): Promise<{ orders: OrderRow[];
       fromStatus: e.fromStatus,
       toStatus: e.toStatus,
       note: e.note,
+      detail: e.detail,
       authorName: e.authorName,
       createdAt: e.createdAt,
       oldDate: e.oldDate,
       newDate: e.newDate,
-      orderId: e.orderId,
-      orderReference: e.order.reference,
-      clientName: e.order.clientName,
+      href: e.supplierOrderId
+        ? `/espace-entreprise/commandes/fournisseurs/${e.supplierOrderId}`
+        : `/espace-entreprise/commandes/${e.orderId}`,
+      orderReference: e.order?.reference ?? e.supplierOrder?.reference ?? null,
+      clientName: e.order?.clientName ?? e.supplierOrder?.supplierName ?? "",
     })),
   };
 }

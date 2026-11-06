@@ -10,6 +10,7 @@ import { requireSession } from "@/lib/auth-guard";
 import { getCustomerSession } from "@/lib/customer-session";
 import { notifyNewOrder } from "@/lib/notify";
 import { isLikelySpam } from "@/lib/antispam";
+import { reverseDeliveries, settleRemainingDelivery } from "@/lib/stock-service";
 import {
   EVENT_FOR_STATUS,
   NOTE_REQUIRED_FOR,
@@ -158,24 +159,6 @@ function readNote(formData: FormData): string {
   return String(formData.get("note") ?? "").trim().slice(0, NOTE_MAX);
 }
 
-// Stock : une commande qui devient « Livrée » retire ses quantités du stock (une seule fois).
-async function applyDeliveredStock(
-  tx: Tx,
-  items: Array<{ productId: string | null; quantity: number }>,
-  direction: 1 | -1
-) {
-  for (const it of items) {
-    if (!it.productId) continue;
-    await tx.product.update({
-      where: { id: it.productId },
-      data: {
-        sold: direction === 1 ? { increment: it.quantity } : { decrement: it.quantity },
-        stock: direction === 1 ? { decrement: it.quantity } : { increment: it.quantity },
-      },
-    });
-  }
-}
-
 export async function changeOrderStatusAction(
   _prevState: OrderActionState,
   formData: FormData
@@ -216,7 +199,16 @@ export async function changeOrderStatusAction(
         authorName: session.name,
       },
     });
-    if (to === "LIVREE") await applyDeliveredStock(tx, order.items, 1);
+    const author = { id: session.sub, name: session.name };
+    // Passage à « Livrée » : on livre le reste à livrer, sans recompter ce qui l'a déjà été.
+    if (to === "LIVREE") await settleRemainingDelivery(tx, id, author);
+    // Une commande annulée n'a plus de livraison ouverte.
+    if (to === "ANNULEE") {
+      await tx.delivery.updateMany({
+        where: { orderId: id, status: { in: ["PREVUE", "EN_COURS"] } },
+        data: { status: "ANNULEE", note: "Commande annulée" },
+      });
+    }
     return true;
   });
 
@@ -264,7 +256,7 @@ export async function reactivateOrderAction(
       },
     });
     // Une commande livrée avait retiré son stock : on le remet pour ne jamais compter deux fois.
-    if (order.status === "LIVREE") await applyDeliveredStock(tx, order.items, -1);
+    if (order.status === "LIVREE") await reverseDeliveries(tx, id, { id: session.sub, name: session.name });
     return true;
   });
 
