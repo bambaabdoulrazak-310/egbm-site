@@ -13,6 +13,7 @@ import { isLikelySpam } from "@/lib/antispam";
 import {
   EVENT_FOR_STATUS,
   NOTE_REQUIRED_FOR,
+  STATUS_LABELS,
   REACTIVATION_TARGET,
   canTransition,
   isStatus,
@@ -28,6 +29,7 @@ export interface OrderState {
 export interface OrderActionState {
   error?: string;
   success?: boolean;
+  message?: string;
 }
 
 const cartSchema = z.record(z.string(), z.number().int().positive());
@@ -221,7 +223,7 @@ export async function changeOrderStatusAction(
 
   revalidateOrders(id);
   if (to === "LIVREE") revalidatePath("/produits");
-  return { success: true };
+  return { success: true, message: `Statut mis à jour : ${STATUS_LABELS[to]}` };
 }
 
 // Réactivation d'une commande terminée ou annulée : administrateur seul, justification obligatoire.

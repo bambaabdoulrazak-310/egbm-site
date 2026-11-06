@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import { useActionState } from "react";
+import { useRouter } from "next/navigation";
 import {
   assignResponsibleAction,
   changeOrderStatusAction,
@@ -21,7 +23,16 @@ const initial: OrderActionState = {};
 const field = "w-full rounded-md border border-border-egbm bg-white p-2 text-sm";
 const panel = "rounded-lg border border-border-egbm bg-white p-4 shadow-sm";
 
+// Après une action réussie, on recharge les données de la page (statut, chronologie, boutons proposés).
+function useRefreshOnSuccess(state: OrderActionState) {
+  const router = useRouter();
+  useEffect(() => {
+    if (state.success) router.refresh();
+  }, [state, router]);
+}
+
 function Feedback({ state }: { state: OrderActionState }) {
+  useRefreshOnSuccess(state);
   if (state.error) {
     return (
       <p className="text-sm font-medium text-rust-dark" role="alert">
@@ -29,7 +40,9 @@ function Feedback({ state }: { state: OrderActionState }) {
       </p>
     );
   }
-  if (state.success) return <p className="text-sm font-medium text-green">Enregistré.</p>;
+  if (state.success) {
+    return <p className="text-sm font-medium text-green">{state.message ?? "Enregistré."}</p>;
+  }
   return null;
 }
 
@@ -195,6 +208,7 @@ export function ResponsiblePanel({
 // Actions rapides dans le bloc « À confirmer » (liste) : confirmer ou refuser une demande du site.
 export function QuickConfirm({ orderId }: { orderId: string }) {
   const [state, formAction, pending] = useActionState(changeOrderStatusAction, initial);
+  useRefreshOnSuccess(state);
 
   return (
     <form action={formAction} className="flex flex-wrap items-center gap-2">
